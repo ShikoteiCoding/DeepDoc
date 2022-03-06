@@ -49,6 +49,9 @@ pip install psycopg2-binary
     1. Core functions are future back
     2. Front should be webpacked
 
+## TODO
+- Fix psycopg return type to fit in the models. Systematic mapping values to values ?
+
 # Roadmap
 ## Comming Features
 - Generate up to date doc (1 level deep)

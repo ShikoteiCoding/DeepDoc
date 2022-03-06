@@ -1,4 +1,6 @@
 import typing
+from datetime import datetime, timezone
+
 ##
 ## Project config
 ##
@@ -16,8 +18,11 @@ class Config:
 
 # TODO: Load types through a schema to make cleaner
 class Piece:
-    def __init__(self, content):
-        self.content = content
+    def __init__(self, values: dict):
+        self.values = values
+
+    def __str__(self) -> str:
+        return str(self.values)
 
 class Doc:
     def __init__(self, content):
@@ -27,7 +32,7 @@ class Doc:
 ##  DB Access Layer
 ## 
 import psycopg2
-from datetime import datetime, timezone
+import psycopg2.extras
 
 class DBLayerAccess:
     def __init__(self, config: Config):
@@ -55,7 +60,7 @@ class DBLayerAccess:
         sql = f"""
         INSERT INTO pieces VALUES (
             '1',
-            '{piece.content}',
+            '{piece.values.get("content")}',
             '{current_timestamp}',
             '{current_timestamp}'
         );
@@ -71,6 +76,29 @@ class DBLayerAccess:
         finally:
             if cursor:
                 cursor.close()
+
+    def get_piece(self, id: int) -> Piece:
+
+        sql = f"""
+        SELECT *
+        FROM pieces
+        WHERE id = {str(id)}
+        """
+
+        cursor = self.connection.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        try:
+            cursor.execute(sql)
+            res = cursor.fetchall()
+            self.connection.commit()
+            piece = Piece(res)
+            print("DB Success - A piece has been created")
+        except (Exception) as error:
+            print("DB Error - A piece insert has failed: ", error)
+        finally:
+            if cursor:
+                cursor.close()
+
+        return piece
 
     def create_doc(self, doc: Doc):
         current_timestamp = datetime.now(timezone.utc)

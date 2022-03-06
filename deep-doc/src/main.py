@@ -35,9 +35,14 @@ if __name__ == '__main__':
 
     db_layer.connect()
 
-    piece = Piece("Created today")
-    page = Doc("First Document")
+    piece = Piece({ "content": "Created today"})
+    doc = Doc("First Document")
 
-    db_layer.create_piece(piece)
+    #db_layer.create_piece(piece)
+    #db_layer.create_doc(doc)
+
+    pieceFetch = db_layer.get_piece(1)
+
+    print(pieceFetch)
 
     db_layer.close()
