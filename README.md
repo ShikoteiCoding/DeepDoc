@@ -34,15 +34,20 @@ source venv/bin/activate
 pip install psycopg2-binary
 ``` 
 
-# TODO
-1. Setup the script (future back)
+# Next Steps
+- Core functions (future back)
     1. Create a piece / doc
     2. Modify a piece / doc
     3. Simple parsing (for now)
-2. Dockerise the future back
-3. Come up with simple front for demo
-4. Dockerise simple front
-5. Connect front with back
+- Precise tech stack (dev not prod)
+    1. Back
+    2. Front
+- Come up with simple front (demo only)
+    1. Framework ?
+    2. TS or JS
+-  Dockerise
+    1. Core functions are future back
+    2. Front should be webpacked
 
 # Roadmap
 ## Comming Features
