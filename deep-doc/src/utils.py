@@ -1,3 +1,4 @@
+import typing
 ##
 ## Project config
 ##
@@ -10,13 +11,26 @@ class Config:
         self.db_pwd  = "admin"
 
 ##
+##  Classes for the Datbase Object Model
+##
+
+# TODO: Load types through a schema to make cleaner
+class Piece:
+    def __init__(self, content):
+        self.content = content
+
+class Doc:
+    def __init__(self, content):
+        self.content = content
+
+##
 ##  DB Access Layer
 ## 
 import psycopg2
-from datetime import date
+from datetime import datetime, timezone
 
 class DBLayerAccess:
-    def __init__(self, config):
+    def __init__(self, config: Config):
         self.config = config
     
     def connect(self):
@@ -29,62 +43,56 @@ class DBLayerAccess:
                 database    = self.config.db_name
             )
         except (Exception, psycopg2.Error) as error:
-            print("Error while connecting to DB: ", error)
+            print("DB Error - Unable to connect: ", error)
     
     def close(self):
         if self.connection:
             self.connection.close()
-            print("All DB connections have been closed")
+            print("DB Success - All connections have been closed")
 
-    def create_piece(self, piece):
-        # TODO: Load the model, not beautiful to hardcode
-
-        current_timestamp = date.today()
+    def create_piece(self, piece: Piece):
+        current_timestamp = datetime.now(timezone.utc)
         sql = f"""
-        INSERT INTO piece VALUES (
+        INSERT INTO pieces VALUES (
             '1',
             '{piece.content}',
             '{current_timestamp}',
             '{current_timestamp}'
-        )
+        );
         """
 
         cursor = self.connection.cursor()
-        cursor.execute(sql)
+        try:
+            cursor.execute(sql)
+            self.connection.commit()
+            print("DB Success - A piece has been created")
+        except (Exception) as error:
+            print("DB Error - A piece insert has failed: ", error)
+        finally:
+            if cursor:
+                cursor.close()
 
-        print("Piece created")
-        
-        if cursor:
-            cursor.close()
-
-    def create_doc(self, doc):
-        # TODO: Load the model, not beautiful to hardcode
-
-        current_timestamp = date.today()
+    def create_doc(self, doc: Doc):
+        current_timestamp = datetime.now(timezone.utc)
         sql = f"""
-        INSERT INTO piece VALUES (
+        INSERT INTO docs VALUES (
             '1',
             '{doc.content}',
             '{current_timestamp}',
             '{current_timestamp}'
-        )
+        );
         """
 
-        print("Doc created")
-
         cursor = self.connection.cursor()
-        cursor.execute(sql)
+
+        try:
+            cursor.execute(sql)
+            self.connection.commit()
+            print("DB Success - A doc has been created")
+        except (Exception) as error:
+            print("BD Error - A doc insert has failed: ", error)
+        finally:
+            if cursor:
+                cursor.close()
         
-        if cursor:
-            cursor.close()
 
-##
-##  Classes for database access layer
-##
-class Piece:
-    def __init__(self, content):
-        self.content = content
-
-class Doc:
-    def __init__(self, content):
-        self.content = content
