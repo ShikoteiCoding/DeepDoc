@@ -36,7 +36,7 @@ pip install psycopg2-binary
 
 # Next Steps
 - Core functions (future back)
-    1. Create a piece / doc
+    1. Create a piece / doc v0 [done]
     2. Modify a piece / doc
     3. Simple parsing (for now)
 - Precise tech stack (dev not prod)
@@ -50,7 +50,7 @@ pip install psycopg2-binary
     2. Front should be webpacked
 
 ## TODO
-- Fix psycopg return type to fit in the models. Systematic mapping values to values ?
+- Fix psycopg return type to fit in the models. Systematic mapping values to values ? [done]
 
 # Roadmap
 ## Enhancements
