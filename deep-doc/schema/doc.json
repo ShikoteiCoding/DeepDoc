@@ -1,0 +1,6 @@
+{
+    "id": "integer",
+    "content": "text",
+    "create_date": "timestamp with time zone",
+    "modify_date": "timestamp with time zone"
+}

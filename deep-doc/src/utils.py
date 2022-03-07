@@ -1,5 +1,21 @@
 import typing
 from datetime import datetime, timezone
+import json
+
+SCHEMA_PATH = "../schema/"
+
+def read_schema(path: str) -> dict:
+
+    with open(path) as f:
+        return json.load(f)
+
+def pg_row_to_dict(row: tuple, schema: dict) -> dict:
+    new_dict = {}
+
+    for index, key in enumerate(schema.keys()):
+        new_dict[key] = row[index]
+
+    return new_dict
 
 ##
 ## Project config
@@ -18,21 +34,25 @@ class Config:
 
 # TODO: Load types through a schema to make cleaner
 class Piece:
-    def __init__(self, values: dict):
-        self.values = values
 
-    def __str__(self) -> str:
-        return str(self.values)
+    schema = read_schema(SCHEMA_PATH + "piece.json")
+
+    def __init__(self, values: dict):
+        for key in Piece.schema:
+            setattr(self, key, values.get(key))
 
 class Doc:
-    def __init__(self, content):
-        self.content = content
+
+    schema = read_schema(SCHEMA_PATH + "doc.json")
+
+    def __init__(self, values: dict):
+        for key in Piece.schema:
+            setattr(self, key, values.get(key))
 
 ##
 ##  DB Access Layer
 ## 
 import psycopg2
-import psycopg2.extras
 
 class DBLayerAccess:
     def __init__(self, config: Config):
@@ -85,12 +105,14 @@ class DBLayerAccess:
         WHERE id = {str(id)}
         """
 
-        cursor = self.connection.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        cursor = self.connection.cursor()
         try:
+            ## TODO Rewrite as a function, always same implementation here
             cursor.execute(sql)
-            res = cursor.fetchall()
+            res = cursor.fetchone()
             self.connection.commit()
-            piece = Piece(res)
+            ##
+            piece = Piece(pg_row_to_dict(res, Piece.schema))
             print("DB Success - A piece has been created")
         except (Exception) as error:
             print("DB Error - A piece insert has failed: ", error)
@@ -122,5 +144,28 @@ class DBLayerAccess:
         finally:
             if cursor:
                 cursor.close()
-        
 
+    def get_doc(self, id: int) -> Piece:
+
+        sql = f"""
+        SELECT *
+        FROM docs
+        WHERE id = {str(id)}
+        """
+
+        cursor = self.connection.cursor()
+        try:
+            ## TODO Rewrite as a function, always same implementation here
+            cursor.execute(sql)
+            res = cursor.fetchone()
+            self.connection.commit()
+            ##
+            doc = Doc(pg_row_to_dict(res, Doc.schema))
+            print("DB Success - A piece has been created")
+        except (Exception) as error:
+            print("DB Error - A piece insert has failed: ", error)
+        finally:
+            if cursor:
+                cursor.close()
+
+        return doc

@@ -53,6 +53,9 @@ pip install psycopg2-binary
 - Fix psycopg return type to fit in the models. Systematic mapping values to values ?
 
 # Roadmap
+## Enhancements
+- Use standarsized json-schema for models
+
 ## Comming Features
 - Generate up to date doc (1 level deep)
 - Add tag / version of doc
