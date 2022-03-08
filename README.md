@@ -48,6 +48,11 @@ pip install psycopg2-binary
 -  Dockerise
     1. Core functions are future back
     2. Front should be webpacked
+- DB
+    1. Auto-increment on PK [done]
+    2. Auto create date ?
+- Beautify
+    1. Encapsulate sql execution
 
 ## TODO
 - Fix psycopg return type to fit in the models. Systematic mapping values to values ? [done]

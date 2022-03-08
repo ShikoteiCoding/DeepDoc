@@ -75,14 +75,14 @@ class DBLayerAccess:
     def close(self):
         if self.connection:
             self.connection.close()
-            print("DB Success - All connections have been closed")
+            print("DB Success - Connection to DB closed")
 
     def create_piece(self, piece: Piece):
         current_timestamp = datetime.now(timezone.utc)
         sql = f"""
         INSERT INTO pieces VALUES (
-            '1',
-            '{piece.values.get("content")}',
+            DEFAULT,
+            '{piece.content}',
             '{current_timestamp}',
             '{current_timestamp}'
         );
@@ -115,21 +115,21 @@ class DBLayerAccess:
                 res = cursor.fetchone()
                 self.connection.commit()
                 ##
-                piece = Piece(pg_row_to_dict(res, Piece.schema))
                 print("DB Success - A piece has been retrieved")
+                return Piece(pg_row_to_dict(res, Piece.schema))
             except (Exception) as error:
                 print("DB Error - A piece insert has failed: ", error)
             finally:
                 if cursor:
                     cursor.close()
-            return piece
+            
         if not self.connection: return
 
     def create_doc(self, doc: Doc):
         current_timestamp = datetime.now(timezone.utc)
         sql = f"""
         INSERT INTO docs VALUES (
-            '1',
+            DEFAULT,
             '{doc.content}',
             '{current_timestamp}',
             '{current_timestamp}'
@@ -164,12 +164,11 @@ class DBLayerAccess:
                 res = cursor.fetchone()
                 self.connection.commit()
                 ##
-                doc = Doc(pg_row_to_dict(res, Doc.schema))
                 print("DB Success - A doc has been retrieved")
+                return Doc(pg_row_to_dict(res, Doc.schema))
             except (Exception) as error:
                 print("DB Error - A piece insert has failed: ", error)
             finally:
                 if cursor:
                     cursor.close()
-            return doc
         if not self.connection: return
