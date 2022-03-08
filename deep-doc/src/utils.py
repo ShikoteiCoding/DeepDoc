@@ -67,8 +67,10 @@ class DBLayerAccess:
                 port        = self.config.db_port,
                 database    = self.config.db_name
             )
+            print("DB Success - Connection to DB created")
         except (Exception, psycopg2.Error) as error:
             print("DB Error - Unable to connect: ", error)
+            self.connection = None
     
     def close(self):
         if self.connection:
@@ -85,17 +87,17 @@ class DBLayerAccess:
             '{current_timestamp}'
         );
         """
-
-        cursor = self.connection.cursor()
-        try:
-            cursor.execute(sql)
-            self.connection.commit()
-            print("DB Success - A piece has been created")
-        except (Exception) as error:
-            print("DB Error - A piece insert has failed: ", error)
-        finally:
-            if cursor:
-                cursor.close()
+        if self.connection:
+            cursor = self.connection.cursor()
+            try:
+                cursor.execute(sql)
+                self.connection.commit()
+                print("DB Success - A piece has been created")
+            except (Exception) as error:
+                print("DB Error - A piece insert has failed: ", error)
+            finally:
+                if cursor:
+                    cursor.close()
 
     def get_piece(self, id: int) -> Piece:
 
@@ -105,22 +107,23 @@ class DBLayerAccess:
         WHERE id = {str(id)}
         """
 
-        cursor = self.connection.cursor()
-        try:
-            ## TODO Rewrite as a function, always same implementation here
-            cursor.execute(sql)
-            res = cursor.fetchone()
-            self.connection.commit()
-            ##
-            piece = Piece(pg_row_to_dict(res, Piece.schema))
-            print("DB Success - A piece has been created")
-        except (Exception) as error:
-            print("DB Error - A piece insert has failed: ", error)
-        finally:
-            if cursor:
-                cursor.close()
-
-        return piece
+        if self.connection:
+            cursor = self.connection.cursor()
+            try:
+                ## TODO Rewrite as a function, always same implementation here
+                cursor.execute(sql)
+                res = cursor.fetchone()
+                self.connection.commit()
+                ##
+                piece = Piece(pg_row_to_dict(res, Piece.schema))
+                print("DB Success - A piece has been retrieved")
+            except (Exception) as error:
+                print("DB Error - A piece insert has failed: ", error)
+            finally:
+                if cursor:
+                    cursor.close()
+            return piece
+        if not self.connection: return
 
     def create_doc(self, doc: Doc):
         current_timestamp = datetime.now(timezone.utc)
@@ -153,19 +156,20 @@ class DBLayerAccess:
         WHERE id = {str(id)}
         """
 
-        cursor = self.connection.cursor()
-        try:
-            ## TODO Rewrite as a function, always same implementation here
-            cursor.execute(sql)
-            res = cursor.fetchone()
-            self.connection.commit()
-            ##
-            doc = Doc(pg_row_to_dict(res, Doc.schema))
-            print("DB Success - A piece has been created")
-        except (Exception) as error:
-            print("DB Error - A piece insert has failed: ", error)
-        finally:
-            if cursor:
-                cursor.close()
-
-        return doc
+        if self.connection:
+            cursor = self.connection.cursor()
+            try:
+                ## TODO Rewrite as a function, always same implementation here
+                cursor.execute(sql)
+                res = cursor.fetchone()
+                self.connection.commit()
+                ##
+                doc = Doc(pg_row_to_dict(res, Doc.schema))
+                print("DB Success - A doc has been retrieved")
+            except (Exception) as error:
+                print("DB Error - A piece insert has failed: ", error)
+            finally:
+                if cursor:
+                    cursor.close()
+            return doc
+        if not self.connection: return

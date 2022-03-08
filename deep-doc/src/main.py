@@ -44,7 +44,4 @@ if __name__ == '__main__':
     pieceFetch = db_layer.get_piece(1)
     docFetch = db_layer.get_doc(1)
 
-    print(pieceFetch.content)
-    print(docFetch.content)
-
     db_layer.close()
