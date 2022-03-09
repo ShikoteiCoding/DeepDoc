@@ -1,3 +1,4 @@
+from turtle import goto
 import typing
 from datetime import datetime, timezone
 import json
@@ -41,6 +42,25 @@ class Piece:
         for key in Piece.schema:
             setattr(self, key, values.get(key))
 
+    def __eq__(self, other):
+        if (isinstance(other, Piece)):
+            for key in Piece.schema:
+                if not (getattr(self, key) == getattr(other, key)): return False
+            return True
+
+    def update(self, values):
+        for (key, value) in values.items():
+            shema_attribute = Piece.schema.get(key)
+
+            if not shema_attribute:
+                print("Model Error - Attribute of Piece not existing in schema: ", key)
+
+            if shema_attribute and Piece.schema.get(key).get("mutable"):
+                print("Model Success - Attribute of Piece has been updated: ", key)
+
+            if shema_attribute and not Piece.schema.get(key).get("mutable"):
+                print("Model Error - Attribute of Piece is not mutable: ", key)
+
 class Doc:
 
     schema = read_schema(SCHEMA_PATH + "doc.json")
@@ -48,6 +68,12 @@ class Doc:
     def __init__(self, values: dict):
         for key in Piece.schema:
             setattr(self, key, values.get(key))
+
+    def __eq__(self, other):
+        if (isinstance(other, Doc)):
+            for key in Doc.schema:
+                if not (getattr(self, key) == getattr(other, key)): return False
+            return True
 
 ##
 ##  DB Access Layer
@@ -110,11 +136,9 @@ class DBLayerAccess:
         if self.connection:
             cursor = self.connection.cursor()
             try:
-                ## TODO Rewrite as a function, always same implementation here
                 cursor.execute(sql)
                 res = cursor.fetchone()
                 self.connection.commit()
-                ##
                 print("DB Success - A piece has been retrieved")
                 return Piece(pg_row_to_dict(res, Piece.schema))
             except (Exception) as error:
@@ -124,6 +148,16 @@ class DBLayerAccess:
                     cursor.close()
             
         if not self.connection: return
+
+    def save_piece(self, piece: Piece):
+
+        prev_piece = self.get_piece(piece.id)
+
+        if prev_piece:
+            print(piece)
+
+        if not prev_piece:
+            print("nothing")
 
     def create_doc(self, doc: Doc):
         current_timestamp = datetime.now(timezone.utc)
@@ -159,11 +193,9 @@ class DBLayerAccess:
         if self.connection:
             cursor = self.connection.cursor()
             try:
-                ## TODO Rewrite as a function, always same implementation here
                 cursor.execute(sql)
                 res = cursor.fetchone()
                 self.connection.commit()
-                ##
                 print("DB Success - A doc has been retrieved")
                 return Doc(pg_row_to_dict(res, Doc.schema))
             except (Exception) as error:

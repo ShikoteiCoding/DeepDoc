@@ -1,6 +1,18 @@
 {
-    "id": "integer",
-    "content": "text",
-    "create_date": "timestamp with time zone",
-    "modify_date": "timestamp with time zone"
+    "id": {
+        "type": "integer",
+        "mutable": false
+    },
+    "content": {
+        "type": "text",
+        "mutable": true
+    },
+    "create_date": {
+        "type": "timestamp with time zone",
+        "mutable": false
+    },
+    "modify_date": {
+        "type": "timestamp with time zone",
+        "mutable": false
+    } 
 }

@@ -38,10 +38,14 @@ if __name__ == '__main__':
     piece = Piece({ "content": "Created today"})
     doc = Doc({"content": "First Document"})
 
-    db_layer.create_piece(piece)
-    db_layer.create_doc(doc)
+    #db_layer.create_piece(piece)
+    #db_layer.create_doc(doc)
 
     pieceFetch = db_layer.get_piece(1)
-    docFetch = db_layer.get_doc(1)
+    pieceFetch2 = db_layer.get_piece(1)
+
+    pieceFetch.update({"id": "2", "random": "no", "content": "My first update of piece"})
+
+    db_layer.save_piece(pieceFetch)
 
     db_layer.close()
