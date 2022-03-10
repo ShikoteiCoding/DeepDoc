@@ -42,10 +42,12 @@ if __name__ == '__main__':
     #db_layer.create_doc(doc)
 
     pieceFetch = db_layer.get_piece(1)
-    pieceFetch2 = db_layer.get_piece(1)
 
-    pieceFetch.update({"id": "2", "random": "no", "content": "My first update of piece"})
-
+    print("Original Piece from DB: ", pieceFetch)
+    pieceFetch.update({"content": "Update this piece of shit"})
     db_layer.save_piece(pieceFetch)
+    print("Updated Piece, not saved yet: ", pieceFetch)
+    pieceFetch2 = db_layer.get_piece(1)
+    print("Original Piece after update: ", pieceFetch2)
 
     db_layer.close()

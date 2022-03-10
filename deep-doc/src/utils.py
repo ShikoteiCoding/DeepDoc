@@ -32,8 +32,6 @@ class Config:
 ##
 ##  Classes for the Datbase Object Model
 ##
-
-# TODO: Load types through a schema to make cleaner
 class Piece:
 
     schema = read_schema(SCHEMA_PATH + "piece.json")
@@ -48,6 +46,12 @@ class Piece:
                 if not (getattr(self, key) == getattr(other, key)): return False
             return True
 
+    def __str__(self):
+        str_print = ''
+        for key in Piece.schema:
+            str_print += (key + ': ' + str(getattr(self, key)) + '\n')
+        return str_print
+
     def update(self, values):
         for (key, value) in values.items():
             shema_attribute = Piece.schema.get(key)
@@ -56,6 +60,7 @@ class Piece:
                 print("Model Error - Attribute of Piece not existing in schema: ", key)
 
             if shema_attribute and Piece.schema.get(key).get("mutable"):
+                setattr(self, key, value)
                 print("Model Success - Attribute of Piece has been updated: ", key)
 
             if shema_attribute and not Piece.schema.get(key).get("mutable"):
@@ -153,11 +158,29 @@ class DBLayerAccess:
 
         prev_piece = self.get_piece(piece.id)
 
-        if prev_piece:
-            print(piece)
+        if prev_piece and prev_piece != piece:
+            sql = f"""
+                UPDATE pieces SET content = '{piece.content}'
+                WHERE id = {piece.id}
+                """
+
+        if self.connection:
+            cursor = self.connection.cursor()
+            try:
+                cursor.execute(sql)
+                self.connection.commit()
+                print("DB Success - A piece has been updated")
+            except (Exception) as error:
+                print("DB Error - A piece update has failed: ", error)
+            finally:
+                if cursor:
+                    cursor.close()
+
+        if prev_piece and prev_piece == piece:
+            print("Model Alert: Piece has not changed", piece)
 
         if not prev_piece:
-            print("nothing")
+            self.create_piece(piece)
 
     def create_doc(self, doc: Doc):
         current_timestamp = datetime.now(timezone.utc)

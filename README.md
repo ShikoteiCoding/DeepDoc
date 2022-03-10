@@ -39,6 +39,7 @@ pip install psycopg2-binary
     1. Create a piece / doc v0 [done]
     2. Modify a piece / doc
     3. Simple parsing (for now)
+    4. Duplicate a piece
 - Precise tech stack (dev not prod)
     1. Back
     2. Front
