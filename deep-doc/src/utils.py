@@ -80,6 +80,26 @@ class Doc:
                 if not (getattr(self, key) == getattr(other, key)): return False
             return True
 
+    def __str__(self):
+        str_print = ''
+        for key in Doc.schema:
+            str_print += (key + ': ' + str(getattr(self, key)) + '\n')
+        return str_print
+
+    def update(self, values):
+        for (key, value) in values.items():
+            shema_attribute = Doc.schema.get(key)
+
+            if not shema_attribute:
+                print("Model Error - Attribute of Doc not existing in schema: ", key)
+
+            if shema_attribute and Piece.schema.get(key).get("mutable"):
+                setattr(self, key, value)
+                print("Model Success - Attribute of Doc has been updated: ", key)
+
+            if shema_attribute and not Piece.schema.get(key).get("mutable"):
+                print("Model Error - Attribute of Doc is not mutable: ", key)
+
 ##
 ##  DB Access Layer
 ## 
@@ -180,7 +200,37 @@ class DBLayerAccess:
             print("Model Alert: Piece has not changed", piece)
 
         if not prev_piece:
+            print("Model Warning: A non existing piece is saved, creating a new entry")
             self.create_piece(piece)
+
+    def save_doc(self, doc: Doc):
+
+        prev_doc = self.get_doc(doc.id)
+
+        if prev_doc and prev_doc != doc:
+            sql = f"""
+                UPDATE docs SET content = '{doc.content}'
+                WHERE id = {doc.id}
+                """
+
+        if self.connection:
+            cursor = self.connection.cursor()
+            try:
+                cursor.execute(sql)
+                self.connection.commit()
+                print("DB Success - A piece has been updated")
+            except (Exception) as error:
+                print("DB Error - A piece update has failed: ", error)
+            finally:
+                if cursor:
+                    cursor.close()
+
+        if prev_doc and prev_doc == doc:
+            print("Model Alert: Piece has not changed", doc)
+
+        if not prev_doc:
+            print("Model Warning: A non existing doc is saved, creating a new entry")
+            self.create_piece(doc)
 
     def create_doc(self, doc: Doc):
         current_timestamp = datetime.now(timezone.utc)
