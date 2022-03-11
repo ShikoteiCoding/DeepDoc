@@ -129,151 +129,143 @@ class DBLayerAccess:
             print("DB Success - Connection to DB closed")
 
     def create_piece(self, piece: Piece):
-        current_timestamp = datetime.now(timezone.utc)
-        sql = f"""
-        INSERT INTO pieces VALUES (
-            DEFAULT,
-            '{piece.content}',
-            '{current_timestamp}',
-            '{current_timestamp}'
-        );
-        """
-        if self.connection:
-            cursor = self.connection.cursor()
-            try:
-                cursor.execute(sql)
-                self.connection.commit()
-                print("DB Success - A piece has been created")
-            except (Exception) as error:
-                print("DB Error - A piece insert has failed: ", error)
-            finally:
-                if cursor:
-                    cursor.close()
+
+        if piece:
+            sql = f"INSERT INTO pieces (content) VALUES ('{piece.content}');"
+            if self.connection:
+                cursor = self.connection.cursor()
+                try:
+                    cursor.execute(sql)
+                    self.connection.commit()
+                    print("DB Success - A piece has been created")
+                except (Exception) as error:
+                    print("DB Error - A piece insert has failed: ", error)
+                finally:
+                    if cursor:
+                        cursor.close()
+        
+        if not piece: print("Model Error - Piece is empty", piece)
+
+    def create_doc(self, doc: Doc):
+
+        if doc:
+            sql = f"INSERT INTO docs (content) VALUES ('{doc.content}');"
+            if self.connection:
+                cursor = self.connection.cursor()
+                try:
+                    cursor.execute(sql)
+                    self.connection.commit()
+                    print("DB Success - A doc has been created")
+                except (Exception) as error:
+                    print("BD Error - A doc insert has failed: ", error)
+                finally:
+                    if cursor:
+                        cursor.close()
+        
+        if not doc: print("Model Error - Doc is empty", doc)
 
     def get_piece(self, id: int) -> Piece:
 
-        sql = f"""
-        SELECT *
-        FROM pieces
-        WHERE id = {str(id)}
-        """
+        if id:
+            sql = f"SELECT * FROM pieces WHERE id = {str(id)}"
 
-        if self.connection:
-            cursor = self.connection.cursor()
-            try:
-                cursor.execute(sql)
-                res = cursor.fetchone()
-                self.connection.commit()
-                print("DB Success - A piece has been retrieved")
-                return Piece(pg_row_to_dict(res, Piece.schema))
-            except (Exception) as error:
-                print("DB Error - A piece insert has failed: ", error)
-            finally:
-                if cursor:
-                    cursor.close()
+            if self.connection:
+                cursor = self.connection.cursor()
+                try:
+                    cursor.execute(sql)
+                    res = cursor.fetchone()
+                    self.connection.commit()
+                    print("DB Success - A piece has been retrieved")
+                    return Piece(pg_row_to_dict(res, Piece.schema))
+                except (Exception) as error:
+                    print("DB Error - A piece fetch has failed: ", error)
+                finally:
+                    if cursor:
+                        cursor.close()
             
-        if not self.connection: return
-
-    def save_piece(self, piece: Piece):
-
-        prev_piece = self.get_piece(piece.id)
-
-        if prev_piece and prev_piece != piece:
-            sql = f"""
-                UPDATE pieces SET content = '{piece.content}'
-                WHERE id = {piece.id}
-                """
-
-        if self.connection:
-            cursor = self.connection.cursor()
-            try:
-                cursor.execute(sql)
-                self.connection.commit()
-                print("DB Success - A piece has been updated")
-            except (Exception) as error:
-                print("DB Error - A piece update has failed: ", error)
-            finally:
-                if cursor:
-                    cursor.close()
-
-        if prev_piece and prev_piece == piece:
-            print("Model Alert: Piece has not changed", piece)
-
-        if not prev_piece:
-            print("Model Warning: A non existing piece is saved, creating a new entry")
-            self.create_piece(piece)
-
-    def save_doc(self, doc: Doc):
-
-        prev_doc = self.get_doc(doc.id)
-
-        if prev_doc and prev_doc != doc:
-            sql = f"""
-                UPDATE docs SET content = '{doc.content}'
-                WHERE id = {doc.id}
-                """
-
-        if self.connection:
-            cursor = self.connection.cursor()
-            try:
-                cursor.execute(sql)
-                self.connection.commit()
-                print("DB Success - A piece has been updated")
-            except (Exception) as error:
-                print("DB Error - A piece update has failed: ", error)
-            finally:
-                if cursor:
-                    cursor.close()
-
-        if prev_doc and prev_doc == doc:
-            print("Model Alert: Piece has not changed", doc)
-
-        if not prev_doc:
-            print("Model Warning: A non existing doc is saved, creating a new entry")
-            self.create_piece(doc)
-
-    def create_doc(self, doc: Doc):
-        current_timestamp = datetime.now(timezone.utc)
-        sql = f"""
-        INSERT INTO docs VALUES (
-            DEFAULT,
-            '{doc.content}',
-            '{current_timestamp}',
-            '{current_timestamp}'
-        );
-        """
-
-        cursor = self.connection.cursor()
-
-        try:
-            cursor.execute(sql)
-            self.connection.commit()
-            print("DB Success - A doc has been created")
-        except (Exception) as error:
-            print("BD Error - A doc insert has failed: ", error)
-        finally:
-            if cursor:
-                cursor.close()
+            if not self.connection: return
+        
+        return
 
     def get_doc(self, id: int) -> Piece:
 
-        sql = f"""
-        SELECT *
-        FROM docs
-        WHERE id = {str(id)}
-        """
+        if id:
+            sql = f"SELECT * FROM docs WHERE id = {str(id)}"
 
-        if self.connection:
-            cursor = self.connection.cursor()
-            try:
-                cursor.execute(sql)
-                res = cursor.fetchone()
-                self.connection.commit()
-                print("DB Success - A doc has been retrieved")
-                return Doc(pg_row_to_dict(res, Doc.schema))
-            except (Exception) as error:
-                print("DB Error - A piece insert has failed: ", error)
-            finally:
-                if cursor:
-                    cursor.close()
-        if not self.connection: return
+            if self.connection:
+                cursor = self.connection.cursor()
+                try:
+                    cursor.execute(sql)
+                    res = cursor.fetchone()
+                    self.connection.commit()
+                    print("DB Success - A doc has been retrieved")
+                    return Doc(pg_row_to_dict(res, Doc.schema))
+                except (Exception) as error:
+                    print("DB Error - A piece insert has failed: ", error)
+                finally:
+                    if cursor:
+                        cursor.close()
+
+            if not self.connection: return
+
+        return
+
+    def save_piece(self, piece: Piece):
+        
+        if piece:
+            prev_piece = self.get_piece(piece.id)
+
+            if prev_piece and prev_piece != piece:
+                sql = f"""
+                    UPDATE pieces SET content = '{piece.content}'
+                    WHERE id = {piece.id}
+                    """
+
+                if self.connection:
+                    cursor = self.connection.cursor()
+                    try:
+                        cursor.execute(sql)
+                        self.connection.commit()
+                        print("DB Success - A piece has been updated")
+                    except (Exception) as error:
+                        print("DB Error - A piece update has failed: ", error)
+                    finally:
+                        if cursor:
+                            cursor.close()
+
+            if prev_piece and prev_piece == piece:
+                print("Model Alert: Piece has not changed", piece)
+
+            if not prev_piece:
+                print("Model Warning: A non existing piece is saved, creating a new entry")
+                self.create_piece(piece)
+
+    def save_doc(self, doc: Doc):
+
+        if doc: 
+            prev_doc = self.get_doc(doc.id)
+
+            if prev_doc and prev_doc != doc:
+                sql = f"""
+                    UPDATE docs SET content = '{doc.content}'
+                    WHERE id = {doc.id}
+                    """
+
+                if self.connection:
+                    cursor = self.connection.cursor()
+                    try:
+                        cursor.execute(sql)
+                        self.connection.commit()
+                        print("DB Success - A doc has been updated")
+                    except (Exception) as error:
+                        print("DB Error - A doc update has failed: ", error)
+                    finally:
+                        if cursor:
+                            cursor.close()
+
+            if prev_doc and prev_doc == doc:
+                print("Model Alert: Piece has not changed", doc)
+
+            if not prev_doc:
+                print("Model Warning: A non existing doc is saved, creating a new entry")
+                self.create_doc(doc)

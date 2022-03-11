@@ -34,25 +34,18 @@ if __name__ == '__main__':
     db_layer = DBLayerAccess(c)
 
     db_layer.connect()
+    # Create
+    piece = Piece({"content": "Created piece"})
+    db_layer.save_piece(piece)
+    doc = Doc({"content": "Created doc"})
+    db_layer.save_doc(doc)
 
-    #piece = Piece({ "content": "Created today"})
-    #doc = Doc({"content": "First Document"})
+    fetch_piece = db_layer.get_piece(1)
+    fetch_piece.update({"content": "Edited content"})
+    db_layer.save_piece(fetch_piece)
 
-    #db_layer.create_piece(piece)
-    #db_layer.create_doc(doc)
-
-    #pieceFetch = db_layer.get_piece(1)
-    docFetch = db_layer.get_doc(1)
-
-    print("Original Doc from DB: \n", docFetch)
-    docFetch.update({"content": "Update this piece of shit"})
-    db_layer.save_doc(docFetch)
-    print(docFetch)
-    #db_layer.save_piece(pieceFetch)
-    #print("Updated Piece, not saved yet: ", pieceFetch)
-    #pieceFetch2 = db_layer.get_piece(1)
-    #print("Original Piece after update: ", pieceFetch2)
-    docFetch2 = db_layer.get_doc(1)
-    print(docFetch2)
+    fetch_doc = db_layer.get_doc(1)
+    fetch_doc.update({"content": "Edited content"})
+    db_layer.save_doc(fetch_doc)
 
     db_layer.close()
