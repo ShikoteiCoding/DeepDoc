@@ -1,3 +1,11 @@
+CREATE OR REPLACE FUNCTION trigger_set_timestamp()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
 CREATE SEQUENCE piece_id_pk_seq
     START 1
     INCREMENT 1
@@ -6,11 +14,16 @@ CREATE SEQUENCE piece_id_pk_seq
 
 CREATE TABLE IF NOT EXISTS pieces (
     id INT NOT NULL DEFAULT nextval('piece_id_pk_seq'),
-    content TEXT NOT NULL,
+    content TEXT NOT NULL DEFAULT NOW(),
     create_date TIMESTAMP WITH TIME ZONE NOT NULL,
     modify_date TIMESTAMP WITH TIME ZONE NOT NULL,
     PRIMARY KEY (id)
 );
+
+CREATE TRIGGER set_timestamp
+BEFORE UPDATE ON pieces
+FOR EACH ROW
+EXECUTE PROCEDURE trigger_set_timestamp();
 
 CREATE SEQUENCE doc_id_pk_seq
     START 1
@@ -21,10 +34,15 @@ CREATE SEQUENCE doc_id_pk_seq
 CREATE TABLE IF NOT EXISTS docs (
     id INT NOT NULL DEFAULT nextval('doc_id_pk_seq'),
     content text NOT NULL,
-    create_date TIMESTAMP WITH TIME ZONE NOT NULL,
+    create_date TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
     modify_date TIMESTAMP WITH TIME ZONE NOT NULL,
     PRIMARY KEY (id)
 );
+
+CREATE TRIGGER set_timestamp
+BEFORE UPDATE ON docs
+FOR EACH ROW
+EXECUTE PROCEDURE trigger_set_timestamp();
 
 CREATE TABLE IF NOT EXISTS docs_pieces_rel (
     pieces_id INT NOT NULL,
