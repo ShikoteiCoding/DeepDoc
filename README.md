@@ -37,7 +37,7 @@ pip install psycopg2-binary
 # Next Steps
 - Core functions (future back)
     1. Create a piece / doc v0 [done]
-    2. Modify a piece / doc
+    2. Modify a piece / doc v0 [done]
     3. Simple parsing (for now)
     4. Duplicate a piece
 - Precise tech stack (dev not prod)
@@ -47,13 +47,14 @@ pip install psycopg2-binary
     1. Framework ?
     2. TS or JS
 -  Dockerise
-    1. Core functions are future back
+    1. Core functions as future back
     2. Front should be webpacked
 - DB
     1. Auto-increment on PK [done]
     2. Auto create date ?
+    3. Swhitch to Key-Value DB ? (thinking)
 - Beautify
-    1. Encapsulate sql execution
+    1. Refactor SQL DB execution
 
 ## TODO
 - Fix psycopg return type to fit in the models. Systematic mapping values to values ? [done]
@@ -64,6 +65,7 @@ pip install psycopg2-binary
 
 ## Comming Features
 - Generate up to date doc (1 level deep)
+- Tree dependencies visualization
 - Add tag / version of doc
 
 ## Complex Features
