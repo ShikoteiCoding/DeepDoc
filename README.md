@@ -51,7 +51,7 @@ pip install psycopg2-binary
     2. Front should be webpacked
 - DB
     1. Auto-increment on PK [done]
-    2. Auto create date ?
+    2. Auto create date / update date ? [done]
     3. Swhitch to Key-Value DB ? (thinking)
 - Beautify
     1. Refactor SQL DB execution
