@@ -55,6 +55,7 @@ pip install psycopg2-binary
     3. Swhitch to Key-Value DB ? (thinking)
 - Beautify
     1. Refactor SQL DB execution
+    2. Active Record Pattern instead between records and object stores
 
 ## TODO
 - Fix psycopg return type to fit in the models. Systematic mapping values to values ? [done]
