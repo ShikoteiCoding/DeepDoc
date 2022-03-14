@@ -19,6 +19,22 @@ def pg_row_to_dict(row: tuple, schema: dict) -> dict:
     return new_dict
 
 ##
+## Declare classes
+##
+class Piece:
+    pass
+class Doc:
+    pass
+class PieceMapper:
+    pass
+class DocMapper:
+    pass
+class DBLayerAccess:
+    pass
+class Config:
+    pass
+
+##
 ## Project config
 ##
 class Config:
@@ -32,6 +48,7 @@ class Config:
 ##
 ##  Classes for the Datbase Object Model
 ##
+
 class Piece:
 
     schema = read_schema(SCHEMA_PATH + "piece.json")
@@ -40,7 +57,7 @@ class Piece:
         for key in Piece.schema:
             setattr(self, key, values.get(key))
 
-    def __eq__(self, other):
+    def __eq__(self, other: Piece):
         if (isinstance(other, Piece)):
             for key in Piece.schema:
                 if not (getattr(self, key) == getattr(other, key)): return False
@@ -52,19 +69,37 @@ class Piece:
             str_print += (key + ': ' + str(getattr(self, key)) + '\n')
         return str_print
 
+class PieceMapper:
+
+    def __init__(self, db_layer: DBLayerAccess):
+        self.db_layer = db_layer
+
+    def find(self, id: int) -> Piece:
+        sql = f"SELECT * FROM pieces WHERE id={id} LIMIT 1"
+        piece = self.db_layer.execute_fetch_one(sql)
+        return self.map_row_to_obj(piece)
+
+    def insert(self, piece: Piece):
+        if piece:
+            sql = f"INSERT INTO pieces (content) VALUES ('{piece.content}');"
+            self.db_layer.execute_insert(sql)
+
     def update(self, values):
         for (key, value) in values.items():
             shema_attribute = Piece.schema.get(key)
-
-            if not shema_attribute:
-                print("Model Error - Attribute of Piece not existing in schema: ", key)
-
-            if shema_attribute and Piece.schema.get(key).get("mutable"):
+            if not shema_attribute: print("Model Error - Attribute of Piece not existing in schema: ", key)
+            elif shema_attribute and Piece.schema.get(key).get("mutable"):
                 setattr(self, key, value)
                 print("Model Success - Attribute of Piece has been updated: ", key)
-
-            if shema_attribute and not Piece.schema.get(key).get("mutable"):
+            elif shema_attribute and not Piece.schema.get(key).get("mutable"):
                 print("Model Error - Attribute of Piece is not mutable: ", key)
+
+    def map_row_to_obj(self, row: tuple):
+        new_dict = {}
+        for index, key in enumerate(Piece.schema.keys()):
+            new_dict[key] = row[index]
+        return Piece(new_dict)
+
 
 class Doc:
 
@@ -86,18 +121,18 @@ class Doc:
             str_print += (key + ': ' + str(getattr(self, key)) + '\n')
         return str_print
 
+    def insert(self, db_layer):
+        sql = f"INSERT INTO pieces (content) VALUES ('{self.content}');"
+        db_layer.insert(sql)
+
     def update(self, values):
         for (key, value) in values.items():
             shema_attribute = Doc.schema.get(key)
-
-            if not shema_attribute:
-                print("Model Error - Attribute of Doc not existing in schema: ", key)
-
-            if shema_attribute and Piece.schema.get(key).get("mutable"):
+            if not shema_attribute: print("Model Error - Attribute of Doc not existing in schema: ", key)
+            elif shema_attribute and Piece.schema.get(key).get("mutable"):
                 setattr(self, key, value)
                 print("Model Success - Attribute of Doc has been updated: ", key)
-
-            if shema_attribute and not Piece.schema.get(key).get("mutable"):
+            elif shema_attribute and not Piece.schema.get(key).get("mutable"):
                 print("Model Error - Attribute of Doc is not mutable: ", key)
 
 ##
@@ -127,6 +162,50 @@ class DBLayerAccess:
         if self.connection:
             self.connection.close()
             print("DB Success - Connection to DB closed")
+
+    def execute_fetch_one(self, sql: str) -> tuple:
+        if sql:
+            if self.connection:
+                cursor = self.connection.cursor()
+                try:
+                    cursor.execute(sql)
+                    res = cursor.fetchone()
+                    self.connection.commit()
+                    print("DB Success - A record has been fetched")
+                    return res
+                except (Exception) as error:
+                    print("DB Error - A record fetch has failed: ", error)
+                finally:
+                    if cursor:
+                        cursor.close()
+    
+    def execute_insert(self, sql: str) -> None:
+        if sql:
+            if self.connection:
+                cursor = self.connection.cursor()
+                try:
+                    cursor.execute(sql)
+                    self.connection.commit()
+                    print("DB Success - A record has been inserted")
+                except (Exception) as error:
+                    print("DB Error - A record insert has failed: ", error)
+                finally:
+                    if cursor:
+                        cursor.close()
+
+    def insert(self, sql: str):
+        if sql:
+            if self.connection:
+                cursor = self.connection.cursor()
+                try:
+                    cursor.execute(sql)
+                    self.connection.commit()
+                    print("DB Success - Record inserted")
+                except (Exception) as error:
+                    print("DB Error - A record insert has failed: ", error)
+                finally:
+                    if cursor:
+                        cursor.close()
 
     def create_piece(self, piece: Piece):
 
