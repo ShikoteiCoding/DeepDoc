@@ -1,4 +1,4 @@
-from utils import DBLayerAccess, Piece, Doc, Config
+from utils import DBLayerAccess, Piece, Doc, Config, PieceMapper, DocMapper
 # This is sample testing, no real and serious unit tests to be implemented
 # Used to assert that code evolutions should not make the existing one crash
 
@@ -7,25 +7,37 @@ if __name__ == '__main__':
     c = Config()
     db_layer = DBLayerAccess(c)
     db_layer.connect()
+    piece_mapper = PieceMapper(db_layer)
+    doc_mapper = DocMapper(db_layer)
 
     print("1 - Creating a Piece and a Doc")
     piece   = Piece({"content": "Created piece"})
-    doc     = Doc({"content": "Created doc"})
+    doc = Piece({"content": "new documentation with new pattern"})
 
     print("2 - Saving a Piece and a Doc")
-    db_layer.save_piece(piece)
-    db_layer.save_doc(doc)
+    inserted_piece = piece_mapper.insert(piece)
+    inserted_doc = doc_mapper.insert(doc)
     
     print("3 - Fetching a Piece and a Doc")
-    fetchPiece  = db_layer.get_piece(1)
-    fetchDoc    = db_layer.get_doc(1)
+    fetch_piece = piece_mapper.find(1)
+    fetch_doc = doc_mapper.find(1)
 
-    print("4 - Updating a Piece and a Doc")
-    fetchPiece.update({"content": "I modified this piece"})
-    fetchDoc.update({"content": "I modified this doc"})
-
-    print("5 - Saving the Piece and Doc")
-    db_layer.save_piece(fetchPiece)
-    db_layer.save_doc(fetchDoc)
+    print("4 - Updating a Piece and a Doc Objects")
+    piece_updated = Piece({
+        "id": fetch_piece.id, 
+        "content": "update this piece",
+        "create_date": fetch_piece.create_date,
+        "modify_date": fetch_piece.modify_date
+    })
+    doc_updated = Doc({
+        "id": fetch_doc.id,
+        "content": "update this document",
+        "create_date": fetch_doc.create_date,
+        "modify_date": fetch_doc.modify_date
+    })
+    
+    print("5 - Updating a Piece and Doc records")
+    piece_updated_saved = piece_mapper.update(piece_updated)
+    doc_updated_saved = piece_mapper.update(doc_updated)
 
     db_layer.close()

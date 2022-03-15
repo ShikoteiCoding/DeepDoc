@@ -75,15 +75,14 @@ class PieceMapper:
         self.db_layer = db_layer
 
     def find(self, id: int) -> Piece:
-        sql = f"SELECT * FROM pieces WHERE id={id} LIMIT 1"
-        piece = self.db_layer.execute_fetch_one(sql)
-        return self.map_row_to_obj(piece)
+        if id:
+            sql = f"SELECT * FROM pieces WHERE id={id} LIMIT 1"
+            return self.map_row_to_obj(self.db_layer.execute_fetch_one(sql))
 
     def insert(self, piece: Piece) -> Piece:
         if piece:
             sql = f"INSERT INTO pieces (content) VALUES ('{piece.content}') RETURNING *;"
-            piece = self.db_layer.execute_insert(sql)
-            return self.map_row_to_obj(piece)
+            return self.map_row_to_obj(self.db_layer.execute_insert(sql))
 
     def update(self, piece: Piece) -> Piece:
         if piece:
@@ -98,20 +97,14 @@ class PieceMapper:
                 print("Model Error - A new record is empty")
             elif not piece.id:
                 print("Model Error - A new record can't be updated")
-        #for (key, value) in values.items():
-        #    shema_attribute = Piece.schema.get(key)
-        #    if not shema_attribute: print("Model Error - Attribute of Piece not existing in schema: ", key)
-        #    elif shema_attribute and Piece.schema.get(key).get("mutable"):
-        #        setattr(self, key, value)
-        #        print("Model Success - Attribute of Piece has been updated: ", key)
-        #    elif shema_attribute and not Piece.schema.get(key).get("mutable"):
-        #        print("Model Error - Attribute of Piece is not mutable: ", key)
 
-    def map_row_to_obj(self, row: tuple):
-        new_dict = {}
-        for index, key in enumerate(Piece.schema.keys()):
-            new_dict[key] = row[index]
-        return Piece(new_dict)
+    def map_row_to_obj(self, row: tuple) -> Piece:
+        if row:
+            new_dict = {}
+            # Expected order of schema and rows / column. Might need fix one day
+            for index, key in enumerate(Piece.schema.keys()):
+                new_dict[key] = row[index]
+            return Piece(new_dict)
 
 
 class Doc:
@@ -122,7 +115,7 @@ class Doc:
         for key in Piece.schema:
             setattr(self, key, values.get(key))
 
-    def __eq__(self, other):
+    def __eq__(self, other: Doc):
         if (isinstance(other, Doc)):
             for key in Doc.schema:
                 if not (getattr(self, key) == getattr(other, key)): return False
@@ -134,19 +127,42 @@ class Doc:
             str_print += (key + ': ' + str(getattr(self, key)) + '\n')
         return str_print
 
-    def insert(self, db_layer):
-        sql = f"INSERT INTO pieces (content) VALUES ('{self.content}');"
-        db_layer.insert(sql)
+class DocMapper:
 
-    def update(self, values):
-        for (key, value) in values.items():
-            shema_attribute = Doc.schema.get(key)
-            if not shema_attribute: print("Model Error - Attribute of Doc not existing in schema: ", key)
-            elif shema_attribute and Piece.schema.get(key).get("mutable"):
-                setattr(self, key, value)
-                print("Model Success - Attribute of Doc has been updated: ", key)
-            elif shema_attribute and not Piece.schema.get(key).get("mutable"):
-                print("Model Error - Attribute of Doc is not mutable: ", key)
+    def __init__(self, db_layer: DBLayerAccess):
+        self.db_layer = db_layer
+
+    def find(self, id: int) -> Doc:
+        if id:
+            sql = f"SELECT * FROM docs WHERE id={id} LIMIT 1"
+            return self.map_row_to_obj(self.db_layer.execute_fetch_one(sql))
+
+    def insert(self, doc: Doc) -> Doc:
+        if doc:
+            sql = f"INSERT INTO docs (content) VALUES ('{doc.content}') RETURNING *;"
+            return self.map_row_to_obj(self.db_layer.execute_insert(sql))
+
+    def update(self, doc: Doc) -> Doc:
+        if doc:
+            if doc.id and doc.content:
+                fetched_doc = self.find(doc.id)
+                if fetched_doc == doc:
+                    print("Model Warning - A record is not updated because has no changes")
+                elif fetched_doc != doc:
+                    sql = f"UPDATE docs SET content = '{doc.content}' WHERE id = {doc.id} RETURNING *;"
+                    return self.map_row_to_obj(self.db_layer.execute_update(sql))
+            elif not doc.content:
+                print("Model Error - A new record is empty")
+            elif not doc.id:
+                print("Model Error - A new record can't be updated")
+
+    def map_row_to_obj(self, row: tuple) :
+        if row:
+            new_dict = {}
+            for index, key in enumerate(Piece.schema.keys()):
+                new_dict[key] = row[index]
+            return Piece(new_dict)
+
 
 ##
 ##  DB Access Layer
