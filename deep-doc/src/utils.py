@@ -128,6 +128,7 @@ class Doc:
             str_print += (key + ': ' + str(getattr(self, key)) + '\n')
         return str_print
 
+
 class DocMapper:
 
     def __init__(self, db_layer: DBLayerAccess):
@@ -164,7 +165,11 @@ class DocMapper:
                 new_dict[key] = row[index]
             return Piece(new_dict)
 
+class DocParser:
 
+    def read(doc: Doc) -> str:
+        full_doc = ""
+        return full_doc
 ##
 ##  DB Access Layer
 ## 
