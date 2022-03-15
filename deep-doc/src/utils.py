@@ -79,20 +79,33 @@ class PieceMapper:
         piece = self.db_layer.execute_fetch_one(sql)
         return self.map_row_to_obj(piece)
 
-    def insert(self, piece: Piece):
+    def insert(self, piece: Piece) -> Piece:
         if piece:
-            sql = f"INSERT INTO pieces (content) VALUES ('{piece.content}');"
-            self.db_layer.execute_insert(sql)
+            sql = f"INSERT INTO pieces (content) VALUES ('{piece.content}') RETURNING *;"
+            piece = self.db_layer.execute_insert(sql)
+            return self.map_row_to_obj(piece)
 
-    def update(self, values):
-        for (key, value) in values.items():
-            shema_attribute = Piece.schema.get(key)
-            if not shema_attribute: print("Model Error - Attribute of Piece not existing in schema: ", key)
-            elif shema_attribute and Piece.schema.get(key).get("mutable"):
-                setattr(self, key, value)
-                print("Model Success - Attribute of Piece has been updated: ", key)
-            elif shema_attribute and not Piece.schema.get(key).get("mutable"):
-                print("Model Error - Attribute of Piece is not mutable: ", key)
+    def update(self, piece: Piece) -> Piece:
+        if piece:
+            if piece.id and piece.content:
+                fetched_piece = self.find(piece.id)
+                if fetched_piece == piece:
+                    print("Model Warning - A record is not updated because has no changes")
+                elif fetched_piece != piece:
+                    sql = f"UPDATE pieces SET content = '{piece.content}' WHERE id = {piece.id} RETURNING *;"
+                    return self.map_row_to_obj(self.db_layer.execute_update(sql))
+            elif not piece.content:
+                print("Model Error - A new record is empty")
+            elif not piece.id:
+                print("Model Error - A new record can't be updated")
+        #for (key, value) in values.items():
+        #    shema_attribute = Piece.schema.get(key)
+        #    if not shema_attribute: print("Model Error - Attribute of Piece not existing in schema: ", key)
+        #    elif shema_attribute and Piece.schema.get(key).get("mutable"):
+        #        setattr(self, key, value)
+        #        print("Model Success - Attribute of Piece has been updated: ", key)
+        #    elif shema_attribute and not Piece.schema.get(key).get("mutable"):
+        #        print("Model Error - Attribute of Piece is not mutable: ", key)
 
     def map_row_to_obj(self, row: tuple):
         new_dict = {}
@@ -179,19 +192,37 @@ class DBLayerAccess:
                     if cursor:
                         cursor.close()
     
-    def execute_insert(self, sql: str) -> None:
+    def execute_insert(self, sql: str) -> tuple:
         if sql:
             if self.connection:
                 cursor = self.connection.cursor()
                 try:
                     cursor.execute(sql)
+                    res = cursor.fetchone()
                     self.connection.commit()
                     print("DB Success - A record has been inserted")
+                    return res
                 except (Exception) as error:
                     print("DB Error - A record insert has failed: ", error)
                 finally:
                     if cursor:
                         cursor.close()
+    
+    def execute_update(self, sql:str) -> tuple:
+        if sql:
+            if self.connection:
+                cursor = self.connection.cursor()
+                try:
+                    cursor.execute(sql)
+                    res = cursor.fetchone()
+                    self.connection.commit()
+                    print("DB Success - A record has been updated")
+                    return res
+                except (Exception) as error:
+                    print("DB Error - A record update has failed: ", error)
+                finally:
+                    if cursor:
+                        cursor.close
 
     def insert(self, sql: str):
         if sql:
