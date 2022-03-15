@@ -54,7 +54,7 @@ pip install psycopg2-binary
     2. Auto create date / update date ? [done]
     3. Swhitch to Key-Value DB ? (thinking)
 - Beautify
-    1. Refactor SQL DB execution
+    1. Refactor SQL DB execution [done]
     2. Active Record Pattern instead between records and object stores [done]
 
 ## TODO

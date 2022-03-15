@@ -193,7 +193,7 @@ class DBLayerAccess:
             self.connection.close()
             print("DB Success - Connection to DB closed")
 
-    def fetch_one(self, cursor: Cursor, sql) -> tuple:
+    def fetch_one(self, cursor: Cursor, sql: str) -> tuple:
         cursor.execute(sql)
         res = cursor.fetchone()
         self.connection.commit()
