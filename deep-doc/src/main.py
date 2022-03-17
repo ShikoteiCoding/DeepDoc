@@ -12,9 +12,16 @@ if __name__ == '__main__':
     doc = Doc({"content": "First deep doc with this amazing piece: \@1@"})
     inserted_doc = doc_mapper.insert(doc)
 
-    piece = Piece({"content": "I am an amazing piece"})
-    inserted_piece = piece_mapper.insert(piece)
+    piece_refs = DocParser.extract_piece_references(inserted_doc)
 
-    print(DocParser.replace_piece_references(inserted_doc))
+    doc_associated_pieces = [PieceMapper(db_layer).find(piece_id) for piece_id in piece_refs]
+
+    pieces = {str(piece.id): str(piece.content) for piece in doc_associated_pieces}
+
+    print(pieces)
+
+    doc_view = DocParser.replace_piece_references(doc, piece_refs, pieces)
+    
+    print(doc_view)
 
     db_layer.close()

@@ -173,16 +173,19 @@ class DocParser:
         return full_doc
 
     def extract_piece_references(doc: Doc) -> list[str]:
+        # Might not need to be called "on read" but "on save"
+        # Because we can use a different relation table to track saved pieces associated to doc
+        # Upsert to avoid adding already existing relations ?
         content = doc.content
         pattern = re.compile('\@(.*)@')
         matches = pattern.findall(content)
         return matches
 
-    def replace_piece_references(doc: Doc):
-        piece_refs = DocParser.extract_piece_references(doc)
+    def replace_piece_references(doc: Doc, piece_refs: list[str], pieces: dict[str, str]):
+        content = doc.content
         for piece_ref in piece_refs:
-            print(piece_ref)
-            # how to access pieces properly ?
+            content = content.replace(f"\@{str(piece_ref)}@", pieces.get(piece_ref))
+        return content
 
     
 ##
