@@ -165,11 +165,26 @@ class DocMapper:
                 new_dict[key] = row[index]
             return Piece(new_dict)
 
+import re
 class DocParser:
 
     def read(doc: Doc) -> str:
         full_doc = ""
         return full_doc
+
+    def extract_piece_references(doc: Doc) -> list[str]:
+        content = doc.content
+        pattern = re.compile('\@(.*)@')
+        matches = pattern.findall(content)
+        return matches
+
+    def replace_piece_references(doc: Doc):
+        piece_refs = DocParser.extract_piece_references(doc)
+        for piece_ref in piece_refs:
+            print(piece_ref)
+            # how to access pieces properly ?
+
+    
 ##
 ##  DB Access Layer
 ## 

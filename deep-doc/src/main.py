@@ -15,6 +15,6 @@ if __name__ == '__main__':
     piece = Piece({"content": "I am an amazing piece"})
     inserted_piece = piece_mapper.insert(piece)
 
-    print(DocParser.read(doc))
+    print(DocParser.replace_piece_references(inserted_doc))
 
     db_layer.close()
