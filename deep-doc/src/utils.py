@@ -168,16 +168,19 @@ class DocMapper:
 import re
 class DocParser:
 
-    def read(doc: Doc) -> str:
-        full_doc = ""
-        return full_doc
+    def read(doc: Doc, piece_mapper: PieceMapper) -> str:
+        piece_refs = DocParser.extract_piece_references(doc)
+        print(piece_refs)
+        doc_associated_pieces = [piece_mapper.find(piece_id) for piece_id in piece_refs]
+        pieces = {str(piece.id): str(piece.content) for piece in doc_associated_pieces}
+        return DocParser.replace_piece_references(doc, piece_refs, pieces)
 
     def extract_piece_references(doc: Doc) -> list[str]:
         # Might not need to be called "on read" but "on save"
         # Because we can use a different relation table to track saved pieces associated to doc
         # Upsert to avoid adding already existing relations ?
         content = doc.content
-        pattern = re.compile('\@(.*)@')
+        pattern = re.compile('\@(.*?)@')
         matches = pattern.findall(content)
         return matches
 
