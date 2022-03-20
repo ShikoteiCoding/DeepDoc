@@ -39,9 +39,9 @@ pip install psycopg2-binary
     1. Create a piece / doc [done]
     2. Modify a piece / doc [done]
     3. Simple parsing (for now) [done]
-    4. Get all doc / pieces
+    4. Get all doc / pieces [ongoing]
     5. Duplicate a piece
-    6. Historicy Tracking
+    6. Historicy Tracking (more of a DB stuff ? - Who knows)
 - Precise tech stack (dev not prod)
     1. Back
     2. Front
@@ -55,13 +55,14 @@ pip install psycopg2-binary
     1. Auto-increment on PK [done]
     2. Auto create date / update date ? [done]
     3. Swhitch to Key-Value DB ? (thinking)
-    4. Adding doc and piece title for search
+    4. Adding doc and piece title for search [half-done]
     5. Saving a doc with references should fill the rel table
 - Beautify
     1. Refactor SQL DB execution [done]
     2. Active Record Pattern instead between records and object stores [done]
     3. Switch prints to proper logging system
-    4. Switch to read unit test, boring to deal with printer to test
+    4. Switch to clean unit test, boring to deal with printer to test
+    5. Create own exceptions for DB
 
 ## TODO
 - Fix psycopg return type to fit in the models. Systematic mapping values to values ? [done]
