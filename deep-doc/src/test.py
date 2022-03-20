@@ -1,4 +1,4 @@
-from utils import DBLayerAccess, Piece, Doc, Config, PieceMapper, DocMapper
+from utils import DBLayerAccess, Piece, Doc, Config, PieceMapper, DocMapper, DocParser
 # This is sample testing, no real and serious unit tests to be implemented
 # Used to assert that code evolutions should not make the existing one crash
 
@@ -39,5 +39,16 @@ if __name__ == '__main__':
     print("5 - Updating a Piece and Doc records")
     piece_updated_saved = piece_mapper.update(piece_updated)
     doc_updated_saved = piece_mapper.update(doc_updated)
+
+    print("6 - Creating a nested doc")
+    print("6.1 - Creating a piece which will be used in the doc")
+    referenced_piece = Piece({"content": "2022"})
+    saved_referenced_piece = piece_mapper.insert(referenced_piece)
+    
+    print("6.2 - Creating the doc and referencing the previously saved piece")
+    nested_doc = Doc({"content": f"DeepDoc was created in \@{saved_referenced_piece.id}@ and is for now open source (lol)"})
+
+    print("6.3 - Reading the document with inline references")
+    print(DocParser.read(nested_doc, piece_mapper))
 
     db_layer.close()

@@ -170,7 +170,6 @@ class DocParser:
 
     def read(doc: Doc, piece_mapper: PieceMapper) -> str:
         piece_refs = DocParser.extract_piece_references(doc)
-        print(piece_refs)
         doc_associated_pieces = [piece_mapper.find(piece_id) for piece_id in piece_refs]
         pieces = {str(piece.id): str(piece.content) for piece in doc_associated_pieces}
         return DocParser.replace_piece_references(doc, piece_refs, pieces)

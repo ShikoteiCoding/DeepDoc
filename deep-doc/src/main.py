@@ -9,9 +9,8 @@ if __name__ == '__main__':
     piece_mapper = PieceMapper(db_layer)
     doc_mapper = DocMapper(db_layer)
     
-    doc = Doc({"content": "First deep doc with this amazing piece: \@12@. But I can also have other pieces: \@2@."})
+    doc = Doc({"content": "First deep doc with this amazing piece: \@12@. But I can also have other pieces: \@2@.\nAnd one more \@4@. Because it's cool"})
 
     print(DocParser.read(doc, piece_mapper))
-    #print(DocParser.extract_piece_references(doc))
 
     db_layer.close()
