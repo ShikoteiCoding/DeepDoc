@@ -60,9 +60,11 @@ pip install psycopg2-binary
 - Beautify
     1. Refactor SQL DB execution [done]
     2. Active Record Pattern instead between records and object stores [done]
+    3. Switch prints to proper logging system
 
 ## TODO
 - Fix psycopg return type to fit in the models. Systematic mapping values to values ? [done]
+- Fix : DB Model is strict but Domain Model is not necessarely: for instance title can be None (should not)
 
 # Roadmap
 ## Enhancements

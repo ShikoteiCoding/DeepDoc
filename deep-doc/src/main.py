@@ -9,8 +9,7 @@ if __name__ == '__main__':
     piece_mapper = PieceMapper(db_layer)
     doc_mapper = DocMapper(db_layer)
     
-    doc = Doc({"content": "First deep doc with this amazing piece: \@12@. But I can also have other pieces: \@2@.\nAnd one more \@4@. Because it's cool"})
-
-    print(DocParser.read(doc, piece_mapper))
+    #piece_mapper.insert(Piece({"title": "Deep Doc Creation Date", "content": "2022"}))
+    doc_mapper.insert(Doc({"title": "Presentation Doc", "content": "Deep doc was created in \@1@"}))
 
     db_layer.close()

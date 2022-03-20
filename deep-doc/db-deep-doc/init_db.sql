@@ -14,6 +14,7 @@ CREATE SEQUENCE piece_id_pk_seq
 
 CREATE TABLE IF NOT EXISTS pieces (
     id INT NOT NULL DEFAULT nextval('piece_id_pk_seq'),
+    title TEXT NOT NULL,
     content TEXT NOT NULL,
     create_date TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
     modify_date TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
@@ -33,7 +34,8 @@ CREATE SEQUENCE doc_id_pk_seq
 
 CREATE TABLE IF NOT EXISTS docs (
     id INT NOT NULL DEFAULT nextval('doc_id_pk_seq'),
-    content text NOT NULL,
+    title TEXT NOT NULL,
+    content TEXT NOT NULL,
     create_date TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
     modify_date TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
     PRIMARY KEY (id)

@@ -3,6 +3,10 @@
         "type": "integer",
         "mutable": false
     },
+    "title": {
+        "type": "text",
+        "mutable": true
+    },
     "content": {
         "type": "text",
         "mutable": true

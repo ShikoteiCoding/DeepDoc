@@ -81,12 +81,12 @@ class PieceMapper:
             return self.map_row_to_obj(self.db_layer.execute_fetch_one(sql))
 
     def insert(self, piece: Piece) -> Piece:
-        if piece:
-            sql = f"INSERT INTO pieces (content) VALUES ('{piece.content}') RETURNING *;"
+        if piece and isinstance(piece, Piece):
+            sql = f"INSERT INTO pieces (title, content) VALUES ('{piece.title}', '{piece.content}') RETURNING *;"
             return self.map_row_to_obj(self.db_layer.execute_insert(sql))
 
     def update(self, piece: Piece) -> Piece:
-        if piece:
+        if piece and isinstance(piece, Piece):
             if piece.id and piece.content:
                 fetched_piece = self.find(piece.id)
                 if fetched_piece == piece:
@@ -136,16 +136,16 @@ class DocMapper:
 
     def find(self, id: int) -> Doc:
         if id:
-            sql = f"SELECT * FROM docs WHERE id={id} LIMIT 1"
+            sql = f"SELECT * FROM docs WHERE id={str(id)} LIMIT 1"
             return self.map_row_to_obj(self.db_layer.execute_fetch_one(sql))
 
     def insert(self, doc: Doc) -> Doc:
-        if doc:
-            sql = f"INSERT INTO docs (content) VALUES ('{doc.content}') RETURNING *;"
+        if doc and isinstance(doc, Doc):
+            sql = f"INSERT INTO docs (title, content) VALUES ('{doc.title}', '{doc.content}') RETURNING *;"
             return self.map_row_to_obj(self.db_layer.execute_insert(sql))
 
     def update(self, doc: Doc) -> Doc:
-        if doc:
+        if doc and isinstance(doc, Doc):
             if doc.id and doc.content:
                 fetched_doc = self.find(doc.id)
                 if fetched_doc == doc:
