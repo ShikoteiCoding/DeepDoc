@@ -61,6 +61,7 @@ pip install psycopg2-binary
     1. Refactor SQL DB execution [done]
     2. Active Record Pattern instead between records and object stores [done]
     3. Switch prints to proper logging system
+    4. Switch to read unit test, boring to deal with printer to test
 
 ## TODO
 - Fix psycopg return type to fit in the models. Systematic mapping values to values ? [done]
