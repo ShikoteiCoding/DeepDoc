@@ -36,10 +36,12 @@ pip install psycopg2-binary
 
 # Next Steps
 - Core functions (future back)
-    1. Create a piece / doc v0 [done]
-    2. Modify a piece / doc v0 [done]
+    1. Create a piece / doc [done]
+    2. Modify a piece / doc [done]
     3. Simple parsing (for now) [done]
-    4. Duplicate a piece
+    4. Get all doc / pieces
+    5. Duplicate a piece
+    6. Historicy Tracking
 - Precise tech stack (dev not prod)
     1. Back
     2. Front
@@ -53,6 +55,8 @@ pip install psycopg2-binary
     1. Auto-increment on PK [done]
     2. Auto create date / update date ? [done]
     3. Swhitch to Key-Value DB ? (thinking)
+    4. Adding doc and piece title for search
+    5. Saving a doc with references should fill the rel table
 - Beautify
     1. Refactor SQL DB execution [done]
     2. Active Record Pattern instead between records and object stores [done]
@@ -65,7 +69,7 @@ pip install psycopg2-binary
 - Use standarsized json-schema for models
 
 ## Comming Features
-- Generate up to date doc (1 level deep)
+- Generate up to date doc (1 level deep) [done]
 - Tree dependencies visualization
 - Add tag / version of doc
 
