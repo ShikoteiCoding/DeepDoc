@@ -248,36 +248,42 @@ class DBLayerAccess:
             print("DB Success - Connection to DB closed")
 
     def fetch_one(self, cursor: Cursor, sql: str) -> tuple:
-        cursor.execute(sql)
-        res = cursor.fetchone()
-        self.connection.commit()
-        return res
+        if cursor:
+            cursor.execute(sql)
+            res = cursor.fetchone()
+            self.connection.commit()
+            if not res: raise Exception("No record found")
+            else:
+                print("DB Success - A record has been fetched")
+                return res
+
+    def fetch_all(self, cursor: Cursor, sql: str) -> list[tuple]:
+        if cursor:
+            cursor.execute(sql)
+            res = cursor.fetchall()
+            self.connection.commit()
+            if not res: raise Exception("No record found")
+            else:
+                print("DB Success - Multiple record has been fetched")
+                return res
 
     def execute_fetch_one(self, sql: str) -> tuple:
         if sql:
             if self.connection:
                 cursor = self.connection.cursor()
                 try:
-                    print("DB Success - A record has been fetched")
                     return self.fetch_one(cursor, sql)
                 except (Exception) as error:
                     print("DB Error - A record fetch has failed: ", error)
                 finally:
                     if cursor:
                         cursor.close()
-
-    def fetch_all(self, cursor: Cursor, sql: str) -> list[tuple]:
-        cursor.execute(sql)
-        res = cursor.fetchall()
-        self.connection.commit()
-        return res
-
+                        
     def execute_fetch_all(self, sql) -> list[tuple]:
         if sql:
             if self.connection:
                 cursor = self.connection.cursor()
                 try:
-                    print("DB Success - Multiple record has been fetched")
                     return self.fetch_all(cursor, sql)
                 except (Exception) as error:
                     print("DB Error - Multiple record fetch has failed: ", error)

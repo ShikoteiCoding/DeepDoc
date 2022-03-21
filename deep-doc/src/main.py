@@ -10,6 +10,5 @@ if __name__ == '__main__':
     doc_mapper = DocMapper(db_layer)
 
     print(piece_mapper.findall())
-    print(doc_mapper.findall())
 
     db_layer.close()
