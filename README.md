@@ -68,6 +68,7 @@ pip install psycopg2-binary
 - Beautify
     1. Refactor SQL DB execution [done]
     2. Active Record Pattern instead between records and object stores [done]
+    3. Switch simple classes to dataclasses
 
 
 ## TODO

@@ -1,7 +1,10 @@
 from sqlite3 import Cursor
-import typing
-from datetime import datetime, timezone
+from dataclasses import dataclass
+
 import json
+import stat
+import typing
+import psycopg2
 
 SCHEMA_PATH = "../schema/"
 
@@ -37,19 +40,22 @@ class Config:
 ##
 ## Project config
 ##
+@dataclass
 class Config:
-    def __init__(self):
-        self.db_host = "localhost"
-        self.db_port = "5432"
-        self.db_name = "postgres"
-        self.db_user = "admin"
-        self.db_pwd  = "admin"
+    """ Dataclass to hold the DB configurations. """
+
+    db_host: str = "localhost"
+    db_port: str = "5432"
+    db_name: str = "postgres"
+    db_user: str = "admin"
+    db_pwd: str= "admin"
 
 ##
 ##  Classes for the Datbase Object Model
 ##
 
 class Piece:
+    """ Domain model of a Piece. """
 
     schema = read_schema(SCHEMA_PATH + "piece.json")
 
@@ -75,10 +81,11 @@ class Piece:
             str_repr += f"\"{key}\": \"{str(getattr(self, key))}\"" + (", " if index + 1 < len(Piece.schema) else "")
         return str_repr + ')'
 
+@dataclass
 class PieceMapper:
+    """ Dataclass to map SQL Logic to Domain Logic for a Piece. """
 
-    def __init__(self, db_layer: DBLayerAccess):
-        self.db_layer = db_layer
+    db_layer: DBLayerAccess
 
     def find(self, id: int) -> Piece:
         if id:
@@ -119,6 +126,7 @@ class PieceMapper:
 
 
 class Doc:
+    """ Domain model of a doc. """
 
     schema = read_schema(SCHEMA_PATH + "doc.json")
 
@@ -144,11 +152,11 @@ class Doc:
             str_repr += f"\"{key}\": \"{str(getattr(self, key))}\"" + (", " if index + 1 < len(Doc.schema) else "")
         return str_repr + ')'
 
-
+@dataclass
 class DocMapper:
+    """ Dataclass to map SQL Logic to Domain Logic for a Piece. """
 
-    def __init__(self, db_layer: DBLayerAccess):
-        self.db_layer = db_layer
+    db_layer: DBLayerAccess
 
     def find(self, id: int) -> Doc:
         if id:
@@ -194,6 +202,7 @@ class DocMapper:
 
 import re
 class DocParser:
+    """ Static class to hold parsing functions. """
 
     def read(doc: Doc, piece_mapper: PieceMapper) -> str:
         if doc and isinstance(doc, Doc):
@@ -222,11 +231,12 @@ class DocParser:
 ##
 ##  DB Access Layer
 ## 
-import psycopg2
 
+@dataclass
 class DBLayerAccess:
-    def __init__(self, config: Config):
-        self.config = config
+    """ Database Layer Access to communicate with DB. """
+
+    config: Config
     
     def connect(self):
         try:
