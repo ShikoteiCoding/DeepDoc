@@ -5,7 +5,7 @@ from utils import DBLayerAccess, Piece, Doc, Config, PieceMapper, DocMapper, Doc
 
 import unittest
 
-class PieceModelTest(unittest.TestCase):
+class PieceTest(unittest.TestCase):
 
     def test_correct_piece_instance(self):
         piece = Piece({"title": "Title", "content": "Content"})
@@ -22,11 +22,11 @@ class PieceModelTest(unittest.TestCase):
         self.assertIsNone(piece.title)
         self.assertIsNone(piece.content)
 
-class DocModelTest(unittest.TestCase):
+class DocTest(unittest.TestCase):
 
     def test_correct_doc_instance(self):
         doc = Doc({"title": "Title", "content": "Content"})
-        self.assertIsInstance(doc, Piece)
+        self.assertIsInstance(doc, Doc)
         self.assertIsNone(doc.id)
         self.assertTrue(doc.title, "Title")
         self.assertTrue(doc.content, "Content")
@@ -37,6 +37,28 @@ class DocModelTest(unittest.TestCase):
         doc = Doc({"titl": "Title", "conten": "Content"})
         self.assertIsNone(doc.title)
         self.assertIsNone(doc.content)
+
+class DBMappingTest(unittest.TestCase):
+
+    def test_insert_piece_db(self):
+        c = Config()
+        db_layer = DBLayerAccess(c)
+        db_layer.connect()
+        piece_mapper = PieceMapper(db_layer)
+        piece = Piece({"title": "Title", "content": "Content"})
+        inserted_piece = piece_mapper.insert(piece)
+        self.assertIsNotNone(inserted_piece)
+        self.assertIsInstance(inserted_piece, Piece)
+
+    def test_insert_doc_db(self):
+        c = Config()
+        db_layer = DBLayerAccess(c)
+        db_layer.connect()
+        doc_mapper = DocMapper(db_layer)
+        doc = Doc({"title": "Title", "content": "Content"})
+        inserted_doc = doc_mapper.insert(doc)
+        self.assertIsNotNone(inserted_doc)
+        self.assertIsInstance(inserted_doc, Doc)
 
 if __name__ == '__main__':
     #print("Beginning Tests")
