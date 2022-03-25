@@ -1,3 +1,4 @@
+from abc import abstractmethod
 from sqlite3 import Cursor
 from dataclasses import dataclass
 from typing import Optional, Type
@@ -90,7 +91,7 @@ class PieceMapper:
     db_layer: DBLayerAccess
 
     def find(self, id: int) -> Piece:
-        if not id: raise TypeError("A piece id is expected.")
+        if not id: raise TypeError("Expect an integer.")
         
         sql = f"SELECT * FROM pieces WHERE id={id} LIMIT 1"
         return self.map_row_to_obj(self.db_layer.execute_fetch_one(sql))
@@ -120,6 +121,7 @@ class PieceMapper:
         return self.map_row_to_obj(self.db_layer.execute_update(sql))
 
     def map_row_to_obj(self, row: tuple) -> Piece:
+        # Might raise little too early, returning None and handling later might be better
         if not row: raise TypeError("A record tuple is expected.")
 
         new_dict = {}
@@ -164,9 +166,10 @@ class DocMapper:
     db_layer: DBLayerAccess
 
     def find(self, id: int) -> Doc:
-        if id:
-            sql = f"SELECT * FROM docs WHERE id={str(id)} LIMIT 1"
-            return self.map_row_to_obj(self.db_layer.execute_fetch_one(sql))
+        if not id: raise TypeError("Expect an integer.")
+
+        sql = f"SELECT * FROM docs WHERE id={str(id)} LIMIT 1"
+        return self.map_row_to_obj(self.db_layer.execute_fetch_one(sql))
 
     def findall(self) -> list[Doc]:
         # Strong hypothesis : DB is light
@@ -174,64 +177,66 @@ class DocMapper:
         return [self.map_row_to_obj(row) for row in self.db_layer.execute_fetch_all(sql)]
 
     def insert(self, doc: Doc) -> Doc:
-        if doc and isinstance(doc, Doc):
-            sql = f"INSERT INTO docs (title, content) VALUES ('{doc.title}', '{doc.content}') RETURNING *;"
-            return self.map_row_to_obj(self.db_layer.execute_insert(sql))
+        if not isinstance(doc, Doc): raise TypeError("A doc object is expected.")
+
+        sql = f"INSERT INTO docs (title, content) VALUES ('{doc.title}', '{doc.content}') RETURNING *;"
+        return self.map_row_to_obj(self.db_layer.execute_insert(sql))
 
     def update(self, doc: Doc) -> Doc:
-        if doc and isinstance(doc, Doc):
-            if doc.id and doc.content:
-                fetched_doc = self.find(doc.id)
-                if fetched_doc == doc:
-                    print("Model Warning - A record is not updated because has no changes")
-                elif fetched_doc != doc:
-                    sql = f"UPDATE docs SET content = '{doc.content}' WHERE id = {doc.id} RETURNING *;"
-                    return self.map_row_to_obj(self.db_layer.execute_update(sql))
-            elif not doc.content:
-                print("Model Error - A new record is empty")
-            elif not doc.id:
-                print("Model Error - A new record can't be updated")
+        if not isinstance(doc, Doc): raise TypeError("A doc object is expected.")
+        
+        if not doc.id or not doc.content: raise AttributeError("Attribute of doc object does not exist.")
+        
+        fetched_doc = self.find(doc.id)
 
-    def map_row_to_obj(self, row: tuple) :
-        if row:
-            new_dict = {}
-            for index, key in enumerate(Doc.schema.keys()):
-                new_dict[key] = row[index]
-            return Doc(new_dict)
+        if fetched_doc == doc:
+            print("Model Warning - A record is not updated because has no changes")
+            return doc
+        
+        sql = f"UPDATE docs SET content = '{doc.content}' WHERE id = {doc.id} RETURNING *;"
+        return self.map_row_to_obj(self.db_layer.execute_update(sql))
 
-    def __repr__(self) -> str:
-        str_repr = 'Doc('
-        for key in Doc.schema:
-            str_repr += f"\"{key}\": \"{str(getattr(self, key))}\", "
-        return str_repr + ')'
+    def map_row_to_obj(self, row: tuple) -> Doc:
+        if not row: raise TypeError("A record tuple is expected.")
+
+        new_dict = {}
+        for index, key in enumerate(Doc.schema.keys()):
+            new_dict[key] = row[index]
+        return Doc(new_dict)
+
+##
+#   Parser Functions
+##
 
 import re
 class DocParser:
     """ Static class to hold parsing functions. """
 
+    @abstractmethod
     def read(doc: Doc, piece_mapper: PieceMapper) -> str:
-        if doc and isinstance(doc, Doc):
-            piece_refs = DocParser.extract_piece_references(doc)
-            doc_associated_pieces = [piece_mapper.find(piece_id) for piece_id in piece_refs]
-            pieces = {str(piece.id): str(piece.content) for piece in doc_associated_pieces}
-            return DocParser.replace_piece_references(doc, piece_refs, pieces)
+        if not isinstance(doc, Doc) or not isinstance(piece_mapper, PieceMapper): raise TypeError("Expect a doc object and a piece mapper object.")
 
+        piece_refs = DocParser.extract_piece_references(doc)
+        doc_associated_pieces = [piece_mapper.find(piece_id) for piece_id in piece_refs]
+        pieces = {str(piece.id): str(piece.content) for piece in doc_associated_pieces}
+        return DocParser.replace_piece_references(doc, piece_refs, pieces)
+
+    @abstractmethod
     def extract_piece_references(doc: Doc) -> list[str]:
         # Might not need to be called "on read" but "on save"
         # Because we can use a different relation table to track saved pieces associated to doc
         # Upsert to avoid adding already existing relations ?
-        if doc and isinstance(doc, Doc):
-            content = doc.content
-            pattern = re.compile('\@(.*?)@')
-            matches = pattern.findall(content)
-            return matches
+        content = doc.content
+        pattern = re.compile('\@(.*?)@')
+        matches = pattern.findall(content)
+        return matches
 
-    def replace_piece_references(doc: Doc, piece_refs: list[str], pieces: dict[str, str]):
-        if doc and isinstance(doc, Doc):
-            content = doc.content
-            for piece_ref in piece_refs:
-                content = content.replace(f"\@{str(piece_ref)}@", pieces.get(piece_ref))
-            return content
+    @abstractmethod
+    def replace_piece_references(doc: Doc, piece_refs: list[str], pieces: dict[str, str]) -> str:
+        content = doc.content
+        for piece_ref in piece_refs:
+            content = content.replace(f"\@{str(piece_ref)}@", pieces.get(piece_ref))
+        return content
 
 ##
 ##  DB Access Layer

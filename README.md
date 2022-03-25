@@ -56,6 +56,8 @@ pip install psycopg2-binary
     2. Switch to clean unit test, boring to deal with printer to test
     3. Create own exceptions for DB [half-done]
     4. Unnest if statements and raising errors
+    5. Add Optional edge cases on function / method returning None
+    6. Switch DBLayerAccess eror catching with context manager
 
 ## History
 - Core functions (future back)
