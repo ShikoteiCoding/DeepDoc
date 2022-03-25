@@ -55,6 +55,7 @@ pip install psycopg2-binary
     1. Switch prints to proper logging system
     2. Switch to clean unit test, boring to deal with printer to test
     3. Create own exceptions for DB [half-done]
+    4. Unnest if statements and raising errors
 
 ## History
 - Core functions (future back)

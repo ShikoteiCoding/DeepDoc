@@ -1,5 +1,6 @@
 from sqlite3 import Cursor
 from dataclasses import dataclass
+from typing import Optional, Type
 
 import json
 import stat
@@ -64,10 +65,11 @@ class Piece:
             setattr(self, key, values.get(key))
 
     def __eq__(self, other: Piece):
-        if (isinstance(other, Piece)):
-            for key in Piece.schema:
-                if not (getattr(self, key) == getattr(other, key)): return False
-            return True
+        if not (isinstance(other, Piece)): raise TypeError("A piece object is expected.")
+        
+        for key in Piece.schema:
+            if (getattr(self, key) != getattr(other, key)): return False
+        return True
 
     def __str__(self):
         str_print = ''
@@ -88,41 +90,43 @@ class PieceMapper:
     db_layer: DBLayerAccess
 
     def find(self, id: int) -> Piece:
-        if id:
-            sql = f"SELECT * FROM pieces WHERE id={id} LIMIT 1"
-            return self.map_row_to_obj(self.db_layer.execute_fetch_one(sql))
+        if not id: raise TypeError("A piece id is expected.")
+        
+        sql = f"SELECT * FROM pieces WHERE id={id} LIMIT 1"
+        return self.map_row_to_obj(self.db_layer.execute_fetch_one(sql))
 
     def findall(self) -> list[Piece]:
-        # Strong hypothesis : DB is light
         sql = f"SELECT * FROM pieces"
         return [self.map_row_to_obj(row) for row in self.db_layer.execute_fetch_all(sql)]
 
     def insert(self, piece: Piece) -> Piece:
-        if piece and isinstance(piece, Piece):
-            sql = f"INSERT INTO pieces (title, content) VALUES ('{piece.title}', '{piece.content}') RETURNING *;"
-            return self.map_row_to_obj(self.db_layer.execute_insert(sql))
+        if not isinstance(piece, Piece): raise TypeError("A piece object is expected.")
+        
+        sql = f"INSERT INTO pieces (title, content) VALUES ('{piece.title}', '{piece.content}') RETURNING *;"
+        return self.map_row_to_obj(self.db_layer.execute_insert(sql))
 
     def update(self, piece: Piece) -> Piece:
-        if piece and isinstance(piece, Piece):
-            if piece.id and piece.content:
-                fetched_piece = self.find(piece.id)
-                if fetched_piece == piece:
-                    print("Model Warning - A record is not updated because has no changes")
-                elif fetched_piece != piece:
-                    sql = f"UPDATE pieces SET content = '{piece.content}' WHERE id = {piece.id} RETURNING *;"
-                    return self.map_row_to_obj(self.db_layer.execute_update(sql))
-            elif not piece.content:
-                print("Model Error - A new record is empty")
-            elif not piece.id:
-                print("Model Error - A new record can't be updated")
+        if not isinstance(piece, Piece): raise TypeError("A piece object is expected.")
+
+        if not piece.id or not piece.content: raise AttributeError("Attribute of piece object does not exist.")
+        
+        fetched_piece = self.find(piece.id)
+
+        if fetched_piece == piece:
+            print("Model Warning - A record is not updated because has no changes") 
+            return piece
+
+        sql = f"UPDATE pieces SET content = '{piece.content}' WHERE id = {piece.id} RETURNING *;"
+        return self.map_row_to_obj(self.db_layer.execute_update(sql))
 
     def map_row_to_obj(self, row: tuple) -> Piece:
-        if row:
-            new_dict = {}
-            # Expected order of schema and rows / column. Might need fix one day
-            for index, key in enumerate(Piece.schema.keys()):
-                new_dict[key] = row[index]
-            return Piece(new_dict)
+        if not row: raise TypeError("A record tuple is expected.")
+
+        new_dict = {}
+        # Expected order of schema and rows / column. Might need fix one day
+        for index, key in enumerate(Piece.schema.keys()):
+            new_dict[key] = row[index]
+        return Piece(new_dict)
 
 
 class Doc:
@@ -135,10 +139,11 @@ class Doc:
             setattr(self, key, values.get(key))
 
     def __eq__(self, other: Doc):
-        if (isinstance(other, Doc)):
-            for key in Doc.schema:
-                if not (getattr(self, key) == getattr(other, key)): return False
-            return True
+        if not (isinstance(other, Doc)): raise TypeError("Expect a Doc to compare with.")
+        
+        for key in Doc.schema:
+            if not (getattr(self, key) == getattr(other, key)): return False
+        return True
 
     def __str__(self):
         str_print = ''
