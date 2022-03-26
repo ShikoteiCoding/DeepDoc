@@ -1,9 +1,11 @@
-from abc import abstractmethod
-from dataclasses import dataclass
-from typing import Optional, Type
+from dataclasses import KW_ONLY, dataclass
+from datetime import datetime
 
 import json
 import psycopg2
+
+from psycopg2.extensions import cursor
+from typing import ClassVar
 
 SCHEMA_PATH = "../schema/"
 
@@ -23,6 +25,8 @@ def pg_row_to_dict(row: tuple, schema: dict) -> dict:
 ##
 ## Declare classes
 ##
+class Config:
+    pass
 class Piece:
     pass
 class Doc:
@@ -32,8 +36,6 @@ class PieceMapper:
 class DocMapper:
     pass
 class DBLayerAccess:
-    pass
-class Config:
     pass
 
 ##
@@ -47,16 +49,15 @@ class Config:
     db_port: str = "5432"
     db_name: str = "postgres"
     db_user: str = "admin"
-    db_pwd: str  = "admin"
+    db_pwd:  str = "admin"
 
 ##
 ##  Classes for the Datbase Object Model
 ##
-
 class Piece:
     """ Domain model of a Piece. """
 
-    schema = read_schema(SCHEMA_PATH + "piece.json")
+    schema: ClassVar[dict] = read_schema(SCHEMA_PATH + "piece.json")
 
     def __init__(self, values: dict):
         for key in Piece.schema:
@@ -132,7 +133,7 @@ class PieceMapper:
 class Doc:
     """ Domain model of a doc. """
 
-    schema = read_schema(SCHEMA_PATH + "doc.json")
+    schema: ClassVar[dict] = read_schema(SCHEMA_PATH + "doc.json")
 
     def __init__(self, values: dict):
         for key in Doc.schema:
@@ -266,7 +267,7 @@ class DBLayerAccess:
             self.connection.close()
             print("DB Success - Connection to DB closed")
 
-    def fetch_one(self, cursor, sql: str) -> tuple:
+    def fetch_one(self, cursor: cursor, sql: str) -> tuple:
         if cursor:
             cursor.execute(sql)
             res = cursor.fetchone()
@@ -276,7 +277,7 @@ class DBLayerAccess:
                 print("DB Success - A record has been fetched")
                 return res
 
-    def fetch_all(self, cursor, sql: str) -> list[tuple]:
+    def fetch_all(self, cursor: cursor, sql: str) -> list[tuple]:
         if cursor:
             cursor.execute(sql)
             res = cursor.fetchall()

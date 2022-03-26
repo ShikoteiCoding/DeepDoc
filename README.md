@@ -51,13 +51,15 @@ pip install psycopg2-binary
     1. Swhitch to Key-Value DB ? (thinking)
     2. Adding doc and piece title for search [half-done]
     3. Saving a doc with references should fill the rel table
+    4. Switch DBLayerAccess error catching with context manager
+    5. Connection pooling (as a performance curiosity)
 - Beautify
     1. Switch prints to proper logging system
     2. Switch to clean unit test, boring to deal with printer to test
     3. Create own exceptions for DB [half-done]
-    4. Unnest if statements and raising errors
+    4. Unnest if statements and raising errors 
     5. Add Optional edge cases on function / method returning None
-    6. Switch DBLayerAccess eror catching with context manager
+    6. Refactor Dataclasses to make them explicit (instead of dynamic instances from dict)
 
 ## History
 - Core functions (future back)
