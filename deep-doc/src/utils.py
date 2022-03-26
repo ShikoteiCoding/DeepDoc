@@ -1,11 +1,8 @@
 from abc import abstractmethod
-from sqlite3 import Cursor
 from dataclasses import dataclass
 from typing import Optional, Type
 
 import json
-import stat
-import typing
 import psycopg2
 
 SCHEMA_PATH = "../schema/"
@@ -42,15 +39,15 @@ class Config:
 ##
 ## Project config
 ##
-@dataclass
+@dataclass(frozen=True)
 class Config:
-    """ Dataclass to hold the DB configurations. """
+    """ Dataclass to hold the DB configurations. Not mutable. """
 
     db_host: str = "localhost"
     db_port: str = "5432"
     db_name: str = "postgres"
     db_user: str = "admin"
-    db_pwd: str= "admin"
+    db_pwd: str  = "admin"
 
 ##
 ##  Classes for the Datbase Object Model
@@ -84,11 +81,12 @@ class Piece:
             str_repr += f"\"{key}\": \"{str(getattr(self, key))}\"" + (", " if index + 1 < len(Piece.schema) else "")
         return str_repr + ')'
 
-@dataclass
+
 class PieceMapper:
     """ Dataclass to map SQL Logic to Domain Logic for a Piece. """
 
-    db_layer: DBLayerAccess
+    def __init__(self, db_layer: DBLayerAccess):
+        self.db_layer = db_layer
 
     def find(self, id: int) -> Piece:
         if not id: raise TypeError("Expect an integer.")
@@ -159,11 +157,12 @@ class Doc:
             str_repr += f"\"{key}\": \"{str(getattr(self, key))}\"" + (", " if index + 1 < len(Doc.schema) else "")
         return str_repr + ')'
 
-@dataclass
+
 class DocMapper:
     """ Dataclass to map SQL Logic to Domain Logic for a Piece. """
 
-    db_layer: DBLayerAccess
+    def __init__(self, db_layer):
+        self.db_layer = db_layer
 
     def find(self, id: int) -> Doc:
         if not id: raise TypeError("Expect an integer.")
@@ -212,7 +211,7 @@ import re
 class DocParser:
     """ Static class to hold parsing functions. """
 
-    @abstractmethod
+    @staticmethod
     def read(doc: Doc, piece_mapper: PieceMapper) -> str:
         if not isinstance(doc, Doc) or not isinstance(piece_mapper, PieceMapper): raise TypeError("Expect a doc object and a piece mapper object.")
 
@@ -221,7 +220,7 @@ class DocParser:
         pieces = {str(piece.id): str(piece.content) for piece in doc_associated_pieces}
         return DocParser.replace_piece_references(doc, piece_refs, pieces)
 
-    @abstractmethod
+    @staticmethod
     def extract_piece_references(doc: Doc) -> list[str]:
         # Might not need to be called "on read" but "on save"
         # Because we can use a different relation table to track saved pieces associated to doc
@@ -231,7 +230,7 @@ class DocParser:
         matches = pattern.findall(content)
         return matches
 
-    @abstractmethod
+    @staticmethod
     def replace_piece_references(doc: Doc, piece_refs: list[str], pieces: dict[str, str]) -> str:
         content = doc.content
         for piece_ref in piece_refs:
@@ -242,11 +241,11 @@ class DocParser:
 ##  DB Access Layer
 ## 
 
-@dataclass
 class DBLayerAccess:
     """ Database Layer Access to communicate with DB. """
 
-    config: Config
+    def __init__(self, config: Config):
+        self.config = config
     
     def connect(self):
         try:
@@ -267,7 +266,7 @@ class DBLayerAccess:
             self.connection.close()
             print("DB Success - Connection to DB closed")
 
-    def fetch_one(self, cursor: Cursor, sql: str) -> tuple:
+    def fetch_one(self, cursor, sql: str) -> tuple:
         if cursor:
             cursor.execute(sql)
             res = cursor.fetchone()
@@ -277,7 +276,7 @@ class DBLayerAccess:
                 print("DB Success - A record has been fetched")
                 return res
 
-    def fetch_all(self, cursor: Cursor, sql: str) -> list[tuple]:
+    def fetch_all(self, cursor, sql: str) -> list[tuple]:
         if cursor:
             cursor.execute(sql)
             res = cursor.fetchall()
