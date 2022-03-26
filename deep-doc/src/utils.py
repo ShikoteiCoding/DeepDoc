@@ -4,7 +4,7 @@ from datetime import datetime
 import json
 import psycopg2
 
-from psycopg2.extensions import cursor
+from psycopg2.extensions import cursor as Cursor
 from typing import ClassVar
 
 SCHEMA_PATH = "../schema/"
@@ -239,6 +239,17 @@ class DocParser:
         return content
 
 ##
+#   Higher level Exceptions for DB
+##
+
+class EmptySQLQueryException(TypeError):
+    pass
+class NoDatabaseConnection(Exception):
+    pass
+class NoDatabaseRecordFound(Exception):
+    pass
+
+##
 ##  DB Access Layer
 ## 
 
@@ -258,82 +269,56 @@ class DBLayerAccess:
                 database    = self.config.db_name
             )
             print("DB Success - Connection to DB created")
-        except (Exception, psycopg2.Error) as error:
-            print("DB Error - Unable to connect: ", error)
-            self.connection = None
+        except (psycopg2.OperationalError) as error:
+            print(error)
     
     def close(self):
-        if self.connection:
-            self.connection.close()
-            print("DB Success - Connection to DB closed")
+        if not self.connection: raise NoDatabaseConnection("Connection does not exist.")
+        
+        self.connection.close()
+        print("DB Success - Connection to DB closed")
 
-    def fetch_one(self, cursor: cursor, sql: str) -> tuple:
-        if cursor:
-            cursor.execute(sql)
-            res = cursor.fetchone()
-            self.connection.commit()
-            if not res: raise Exception("No record found")
-            else:
-                print("DB Success - A record has been fetched")
-                return res
+    def fetch_one(self, cursor: Cursor, sql: str) -> tuple:
+        """ Method used to execute a query which returns exactly one record. """
+        cursor.execute(sql)
+        res = cursor.fetchone()
+        self.connection.commit()
+        return res
 
-    def fetch_all(self, cursor: cursor, sql: str) -> list[tuple]:
-        if cursor:
-            cursor.execute(sql)
-            res = cursor.fetchall()
-            self.connection.commit()
-            if not res: raise Exception("No record found")
-            else:
-                print("DB Success - Multiple record has been fetched")
-                return res
+    def fetch_multiple(self, cursor: Cursor, sql: str) -> list[tuple]:
+        cursor.execute(sql)
+        res = cursor.fetchall()
+        self.connection.commit()
+        return res
 
     def execute_fetch_one(self, sql: str) -> tuple:
-        if sql:
-            if self.connection:
-                cursor = self.connection.cursor()
-                try:
-                    return self.fetch_one(cursor, sql)
-                except (Exception) as error:
-                    print("DB Error - A record fetch has failed: ", error)
-                finally:
-                    if cursor:
-                        cursor.close()
+        if not self.connection: raise NoDatabaseConnection("Connection does not exist.")
+
+        if not sql: raise EmptySQLQueryException("SQL Query provided is Null.")
+
+        with self.connection.cursor() as cur:
+            return self.fetch_one(cur, sql)
                         
     def execute_fetch_all(self, sql) -> list[tuple]:
-        if sql:
-            if self.connection:
-                cursor = self.connection.cursor()
-                try:
-                    return self.fetch_all(cursor, sql)
-                except (Exception) as error:
-                    print("DB Error - Multiple record fetch has failed: ", error)
-                finally:
-                    if cursor:
-                        cursor.close()
+        if not self.connection: raise NoDatabaseConnection("Connection does not exist.")
 
+        if not sql: raise EmptySQLQueryException("SQL Query provided is Null.")
+
+        with self.connection.cursor() as cur:
+            return self.fetch_multiple(cur, sql)
     
     def execute_insert(self, sql: str) -> tuple:
-        if sql:
-            if self.connection:
-                cursor = self.connection.cursor()
-                try:
-                    print("DB Success - A record has been inserted")
-                    return self.fetch_one(cursor, sql)
-                except (Exception) as error:
-                    print("DB Error - A record insert has failed: ", error)
-                finally:
-                    if cursor:
-                        cursor.close()
-    
+        if not self.connection: raise NoDatabaseConnection("Connection does not exist.")
+
+        if not sql: raise EmptySQLQueryException("SQL Query provided is Null.")
+
+        with self.connection.cursor() as cur:
+            return self.fetch_one(cur, sql)
+
     def execute_update(self, sql:str) -> tuple:
-        if sql:
-            if self.connection:
-                cursor = self.connection.cursor()
-                try:
-                    print("DB Success - A record has been updated")
-                    return self.fetch_one(cursor, sql)
-                except (Exception) as error:
-                    print("DB Error - A record update has failed: ", error)
-                finally:
-                    if cursor:
-                        cursor.close
+        if not self.connection: raise NoDatabaseConnection("Connection does not exist.")
+
+        if not sql: raise EmptySQLQueryException("SQL Query provided is Null.")
+
+        with self.connection.cursor() as cur:
+            return self.fetch_one(cur, sql)

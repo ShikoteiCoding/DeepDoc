@@ -112,6 +112,10 @@ if __name__ == '__main__':
     
     print("6.3 - Reading the document with inline references")
     print(DocParser.read(nested_doc, piece_mapper))
+
+    print("7 - Getting all records")
+    print(piece_mapper.findall())
+    print(doc_mapper.findall())
     
     db_layer.close()
 
