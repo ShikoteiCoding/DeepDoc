@@ -14,14 +14,6 @@ def read_schema(path: str) -> dict:
     with open(path) as f:
         return json.load(f)
 
-def pg_row_to_dict(row: tuple, schema: dict) -> dict:
-    new_dict = {}
-
-    for index, key in enumerate(schema.keys()):
-        new_dict[key] = row[index]
-
-    return new_dict
-
 ##
 ## Declare classes
 ##
@@ -58,10 +50,14 @@ class Piece:
     """ Domain model of a Piece. """
 
     schema: ClassVar[dict] = read_schema(SCHEMA_PATH + "piece.json")
+    schema_fields: ClassVar[list] = list(schema.keys())
 
     def __init__(self, values: dict):
         for key in Piece.schema:
-            setattr(self, key, values.get(key))
+            setattr(self, key, None)
+        for (attribute, value) in values.items():
+            if not attribute in Piece.schema_fields: raise AttributeError("Attribute does not exist in Piece Schema.", attribute)
+            setattr(self, attribute, value)
 
     def __eq__(self, other: Piece):
         if not (isinstance(other, Piece)): raise TypeError("A piece object is expected.")
@@ -71,16 +67,16 @@ class Piece:
         return True
 
     def __str__(self):
-        str_print = ''
+        str_print = ""
         for key in Piece.schema:
-            str_print += (key + ': ' + str(getattr(self, key)) + '\n')
+            str_print += (key + ": " + str(getattr(self, key)) + "\n")
         return str_print
 
     def __repr__(self) -> str:
-        str_repr = 'Piece('
+        str_repr = "Piece("
         for (index, key) in enumerate(Piece.schema):
             str_repr += f"\"{key}\": \"{str(getattr(self, key))}\"" + (", " if index + 1 < len(Piece.schema) else "")
-        return str_repr + ')'
+        return str_repr + ")"
 
 
 class PieceMapper:
@@ -134,10 +130,14 @@ class Doc:
     """ Domain model of a doc. """
 
     schema: ClassVar[dict] = read_schema(SCHEMA_PATH + "doc.json")
+    schema_fields: ClassVar[list] = list(schema.keys())
 
     def __init__(self, values: dict):
         for key in Doc.schema:
-            setattr(self, key, values.get(key))
+            setattr(self, key, None)
+        for (attribute, value) in values.items():
+            if not attribute in Doc.schema_fields: raise AttributeError("Attribute does not exist in Doc Schema.", attribute)
+            setattr(self, attribute, value)
 
     def __eq__(self, other: Doc):
         if not (isinstance(other, Doc)): raise TypeError("Expect a Doc to compare with.")
