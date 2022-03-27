@@ -112,7 +112,7 @@ class PieceMapper:
             print("Model Warning - A record is not updated because has no changes") 
             return piece
 
-        sql = f"UPDATE pieces SET content = '{piece.content}' WHERE id = {piece.id} RETURNING *;"
+        sql = f"UPDATE pieces SET title = '{piece.title}', content = '{piece.content}' WHERE id = {piece.id} RETURNING *;"
         return self.map_row_to_obj(self.db_layer.execute_update(sql))
 
     def map_row_to_obj(self, row: tuple) -> Piece:
@@ -193,7 +193,7 @@ class DocMapper:
             print("Model Warning - A record is not updated because has no changes")
             return doc
         
-        sql = f"UPDATE docs SET content = '{doc.content}' WHERE id = {doc.id} RETURNING *;"
+        sql = f"UPDATE docs SET content = '{doc.content}', title = '{doc.title}' WHERE id = {doc.id} RETURNING *;"
         return self.map_row_to_obj(self.db_layer.execute_update(sql))
 
     def map_row_to_obj(self, row: tuple) -> Doc:

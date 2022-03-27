@@ -83,8 +83,6 @@ class DBMappingTest(unittest.TestCase):
         self.assertEqual(doc.title, inserted_doc.title)
         self.assertEqual(doc.content, inserted_doc.content)
 
-        self.first_inserted_doc = inserted_doc
-
         db_layer.close()
 
     def test_fetch_piece_db(self):
@@ -119,49 +117,78 @@ class DBMappingTest(unittest.TestCase):
 
         db_layer.close()
 
+    def test_update_piece_db(self):
+        
+        c = Config()
+        db_layer = DBLayerAccess(c)
+        db_layer.connect()
+        piece_mapper = PieceMapper(db_layer)
+        piece = Piece({"title": "Title", "content": "Content"})
+        inserted_piece = piece_mapper.insert(piece)
+
+        updated_piece = Piece({
+            "id": inserted_piece.id,
+            "title": "new title",
+            "content": "update this piece",
+            "create_date": inserted_piece.create_date,
+            "modify_date": inserted_piece.modify_date
+        })
+
+        self.assertEqual(inserted_piece.id, updated_piece.id)
+        self.assertNotEqual(inserted_piece.title, updated_piece.title)
+        self.assertNotEqual(inserted_piece.content, updated_piece.content)
+        self.assertEqual(inserted_piece.create_date, updated_piece.create_date)
+        self.assertEqual(inserted_piece.modify_date, updated_piece.modify_date)
+
+        saved_piece = piece_mapper.update(updated_piece)
+
+        self.assertEqual(saved_piece.id, updated_piece.id)
+        self.assertEqual(saved_piece.title, updated_piece.title)
+        self.assertEqual(saved_piece.content, updated_piece.content)
+        self.assertEqual(saved_piece.create_date, updated_piece.create_date)
+        self.assertNotEqual(saved_piece.modify_date, updated_piece.modify_date)
+
+        self.assertNotEqual(saved_piece, updated_piece)
+
+        db_layer.close()
+
+    def test_update_doc_db(self):
+        
+        c = Config()
+        db_layer = DBLayerAccess(c)
+        db_layer.connect()
+        doc_mapper = DocMapper(db_layer)
+        doc = Doc({"title": "Title", "content": "Content"})
+        inserted_doc = doc_mapper.insert(doc)
+
+        updated_doc = Doc({
+            "id": inserted_doc.id,
+            "title": "new title",
+            "content": "update this piece",
+            "create_date": inserted_doc.create_date,
+            "modify_date": inserted_doc.modify_date
+        })
+
+        self.assertEqual(inserted_doc.id, updated_doc.id)
+        self.assertNotEqual(inserted_doc.title, updated_doc.title)
+        self.assertNotEqual(inserted_doc.content, updated_doc.content)
+        self.assertEqual(inserted_doc.create_date, updated_doc.create_date)
+        self.assertEqual(inserted_doc.modify_date, updated_doc.modify_date)
+
+        saved_doc = doc_mapper.update(updated_doc)
+
+        self.assertEqual(saved_doc.id, updated_doc.id)
+        self.assertEqual(saved_doc.title, updated_doc.title)
+        self.assertEqual(saved_doc.content, updated_doc.content)
+        self.assertEqual(saved_doc.create_date, updated_doc.create_date)
+        self.assertNotEqual(saved_doc.modify_date, updated_doc.modify_date)
+
+        self.assertNotEqual(saved_doc, updated_doc)
+
+        db_layer.close()
+
 
 if __name__ == '__main__':
-    #print("Beginning Tests")
-    #c = Config()
-    #db_layer = DBLayerAccess(c)
-    #db_layer.connect()
-    #piece_mapper = PieceMapper(db_layer)
-    #doc_mapper = DocMapper(db_layer)
-    #
-    #print("1 - Creating a Piece and a Doc")
-    #piece   = Piece({"title": "Test Piece", "content": "Random Piece content."})
-    #doc = Doc({"title": "Test doc", "content": "new documentation with new pattern"})
-    #
-    #print("2 - Saving a Piece and a Doc")
-    #inserted_piece = piece_mapper.insert(piece)
-    #inserted_doc = doc_mapper.insert(doc)
-    #
-    #print("3 - Fetching a Piece and a Doc")
-    #fetch_piece = piece_mapper.find(1)
-    #fetch_doc = doc_mapper.find(1)
-    #
-    #print(fetch_piece, fetch_doc)
-    #
-    #print("4 - Updating a Piece and a Doc Objects")
-    #piece_updated = Piece({
-    #    "id": fetch_piece.id,
-    #    "title": fetch_piece.title,
-    #    "content": "update this piece",
-    #    "create_date": fetch_piece.create_date,
-    #    "modify_date": fetch_piece.modify_date
-    #})
-    #doc_updated = Doc({
-    #    "id": fetch_doc.id,
-    #    "title": fetch_doc.title,
-    #    "content": "update this document",
-    #    "create_date": fetch_doc.create_date,
-    #    "modify_date": fetch_doc.modify_date
-    #})
-    #
-    #print("5 - Updating a Piece and Doc records")
-    #piece_updated_saved = piece_mapper.update(piece_updated)
-    #doc_updated_saved = doc_mapper.update(doc_updated)
-    #
     #print("6 - Creating a nested doc")
     #print("6.1 - Creating a piece which will be used in the doc")
     #referenced_piece = Piece({"title": "Creation Date", "content": "2022"})

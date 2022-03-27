@@ -1,6 +1,5 @@
 # DeepDoc
-Docs writing should be easier
-
+Docs writing should be easier. This project is for me to progress as a software developpe. I document myself a lot before implementing and try to use the most coherent architectural choices I can.
 
 
 # Installation
@@ -51,7 +50,7 @@ pip install psycopg2-binary
     1. Swhitch to Key-Value DB ? (thinking)
     2. Adding doc and piece title for search [half-done]
     3. Saving a doc with references should fill the rel table
-    4. Switch DBLayerAccess error catching with context manager
+    4. Use psycopg execute sql with parameters instead of using f-strings (not safe ?)
     5. Connection pooling (as a performance curiosity)
 - Beautify
     1. Switch prints to proper logging system
@@ -70,6 +69,7 @@ pip install psycopg2-binary
 - DB
     1. Auto-increment on PK [done]
     2. Auto create date / update date ? [done]
+    3. Switch DBLayerAccess error catching with context manager [done]
 - Beautify
     1. Refactor SQL DB execution [done]
     2. Active Record Pattern instead between records and object stores [done]
