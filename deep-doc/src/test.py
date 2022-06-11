@@ -1,4 +1,9 @@
-from utils import DBLayerAccess, Config, PieceMapper, DocMapper, DocParser
+from db.db import  DBLayerAccess
+from config import Config
+from utils import (
+    DocumentParser, 
+    PieceMapper, DocumentMapper
+)
 # This is sample testing, no real and serious unit tests to be implemented
 # Used to assert that code evolutions should not make the existing one crash
 # Can also be use to DB changes by adding the changes in the Mappers
@@ -69,7 +74,7 @@ class DBMappingTest(unittest.TestCase):
         c = Config()
         db_layer = DBLayerAccess(c)
         db_layer.connect()
-        doc_mapper = DocMapper(db_layer)
+        doc_mapper = DocumentMapper(db_layer)
         doc = Document(**{"title": "Title", "content": "Content"})
         inserted_doc = doc_mapper.insert(doc)
 
@@ -109,7 +114,7 @@ class DBMappingTest(unittest.TestCase):
         c = Config()
         db_layer = DBLayerAccess(c)
         db_layer.connect()
-        doc_mapper = DocMapper(db_layer)
+        doc_mapper = DocumentMapper(db_layer)
         doc = Document(**{"title": "Title", "content": "Content"})
         inserted_doc = doc_mapper.insert(doc)
 
@@ -160,7 +165,7 @@ class DBMappingTest(unittest.TestCase):
         c = Config()
         db_layer = DBLayerAccess(c)
         db_layer.connect()
-        doc_mapper = DocMapper(db_layer)
+        doc_mapper = DocumentMapper(db_layer)
         doc = Document(**{"title": "Title", "content": "Content"})
         inserted_doc = doc_mapper.insert(doc)
 
