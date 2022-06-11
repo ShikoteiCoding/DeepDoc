@@ -28,13 +28,13 @@ class PieceMapper:
 
     def findall(self) -> list[Piece]:
         sql = f"SELECT * FROM pieces"
-        return [self.map_row_to_obj(row) for row in self.db_layer.execute_fetch_all(sql)]
+        return [self.map_row_to_obj(row) for row in self.db_layer.select(sql)]
 
     def insert(self, piece: Piece) -> Piece:
         if not isinstance(piece, Piece): raise TypeError("A piece object is expected.")
         
         sql = f"INSERT INTO pieces (title, content) VALUES ('{piece.title}', '{piece.content}') RETURNING *;"
-        return self.map_row_to_obj(self.db_layer.execute_insert(sql))
+        return self.map_row_to_obj(self.db_layer.insert(sql))
 
     def update(self, piece: Piece) -> Piece:
         if not isinstance(piece, Piece): raise TypeError("A piece object is expected.")
@@ -48,9 +48,9 @@ class PieceMapper:
             return piece
 
         sql = f"UPDATE pieces SET title = '{piece.title}', content = '{piece.content}' WHERE id = {piece.id} RETURNING *;"
-        return self.map_row_to_obj(self.db_layer.execute_update(sql))
+        return self.map_row_to_obj(self.db_layer.update(sql))
 
-    def map_row_to_obj(self, row: dict) -> Piece:
+    def map_row_to_obj(self, row: tuple[Any, ...] | None) -> Piece:
         # Might raise little too early, returning None and handling later might be better
         if not row: raise TypeError("A record tuple is expected.")
 

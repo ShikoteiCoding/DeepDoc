@@ -2,6 +2,8 @@ from typing import Any
 import psycopg2
 import psycopg2.extras
 
+from psycopg2.extras import RealDictCursor, RealDictConnection, RealDictRow
+
 from psycopg2.extensions import cursor as Cursor
 from config import Config
 
@@ -37,6 +39,9 @@ class DBLayerAccess:
             print("DB Success - Connection to DB created")
         except (psycopg2.OperationalError) as error:
             print(error)
+
+    def commit(self):
+        self.connection.commit()
     
     def close(self):
         if not self.connection: raise NoDatabaseConnection("Connection does not exist.")
@@ -44,48 +49,40 @@ class DBLayerAccess:
         self.connection.close()
         print("DB Success - Connection to DB closed")
 
-    def fetch_one(self, cursor: Cursor, sql: str) -> tuple[Any, ...] | None:
-        """ Method used to execute a query which returns exactly one record if found. """
-        cursor.execute(sql)
-        res = cursor.fetchone()
-        self.connection.commit()
-        return res
+    #def fetch_one(self, cursor: Cursor, sql: str) -> dict | None:
+    #    """ Method used to execute a query which returns exactly one record if found. """
+    #    cursor.execute(sql)
+    #    res = cursor.fetchone()
+    #    self.commit()
+    #    return RealDictRow(res)
 
-    def fetch_multiple(self, cursor: Cursor, sql: str) -> list[tuple[Any, ...]] | None:
+    def execute(self, cursor: Cursor, sql: str) -> list[dict] | None:
         """ Method used to execute a query which returns multiple records if found. """
         cursor.execute(sql)
         res = cursor.fetchall()
-        self.connection.commit()
-        return res
-
-    def execute_fetch_one(self, sql: str) -> tuple[Any, ...] | None:
-        if not self.connection: raise NoDatabaseConnection("Connection does not exist.")
-
-        if not sql: raise EmptySQLQueryException("SQL Query provided is Null.")
-
-        with self.connection.cursor(cursor_factory = psycopg2.extras.RealDictCursor) as cur:
-            return self.fetch_one(cur, sql)
+        self.commit()
+        return res #type: ignore
                         
-    def execute_fetch_all(self, sql) -> list[tuple[Any, ...]] | None:
+    def select(self, sql) -> list[dict] | None:
         if not self.connection: raise NoDatabaseConnection("Connection does not exist.")
 
         if not sql: raise EmptySQLQueryException("SQL Query provided is Null.")
 
         with self.connection.cursor(cursor_factory = psycopg2.extras.RealDictCursor) as cur:
-            return self.fetch_multiple(cur, sql)
+            return self.execute(cur, sql)
     
-    def execute_insert(self, sql: str) -> tuple[Any, ...] | None:
+    def insert(self, sql: str) -> list[dict] | None:
         if not self.connection: raise NoDatabaseConnection("Connection does not exist.")
 
         if not sql: raise EmptySQLQueryException("SQL Query provided is Null.")
 
         with self.connection.cursor(cursor_factory = psycopg2.extras.RealDictCursor) as cur:
-            return self.fetch_one(cur, sql)
+            return self.execute(cur, sql)
 
-    def execute_update(self, sql:str) -> tuple[Any, ...] | None:
+    def update(self, sql:str) -> list[dict] | None:
         if not self.connection: raise NoDatabaseConnection("Connection does not exist.")
 
         if not sql: raise EmptySQLQueryException("SQL Query provided is Null.")
 
         with self.connection.cursor(cursor_factory = psycopg2.extras.RealDictCursor) as cur:
-            return self.fetch_one(cur, sql)
+            return self.execute(cur, sql)
