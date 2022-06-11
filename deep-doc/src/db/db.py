@@ -43,19 +43,20 @@ class DBLayerAccess:
         print("DB Success - Connection to DB closed")
 
     def fetch_one(self, cursor: Cursor, sql: str) -> tuple[Any, ...] | None:
-        """ Method used to execute a query which returns exactly one record. """
+        """ Method used to execute a query which returns exactly one record if found. """
         cursor.execute(sql)
         res = cursor.fetchone()
         self.connection.commit()
         return res
 
-    def fetch_multiple(self, cursor: Cursor, sql: str) -> list[tuple]:
+    def fetch_multiple(self, cursor: Cursor, sql: str) -> list[tuple[Any, ...]] | None:
+        """ Method used to execute a query which returns multiple records if found. """
         cursor.execute(sql)
         res = cursor.fetchall()
         self.connection.commit()
         return res
 
-    def execute_fetch_one(self, sql: str) -> tuple:
+    def execute_fetch_one(self, sql: str) -> tuple[Any, ...] | None:
         if not self.connection: raise NoDatabaseConnection("Connection does not exist.")
 
         if not sql: raise EmptySQLQueryException("SQL Query provided is Null.")
@@ -63,7 +64,7 @@ class DBLayerAccess:
         with self.connection.cursor() as cur:
             return self.fetch_one(cur, sql)
                         
-    def execute_fetch_all(self, sql) -> list[tuple]:
+    def execute_fetch_all(self, sql) -> list[tuple[Any, ...]] | None:
         if not self.connection: raise NoDatabaseConnection("Connection does not exist.")
 
         if not sql: raise EmptySQLQueryException("SQL Query provided is Null.")
@@ -71,7 +72,7 @@ class DBLayerAccess:
         with self.connection.cursor() as cur:
             return self.fetch_multiple(cur, sql)
     
-    def execute_insert(self, sql: str) -> tuple:
+    def execute_insert(self, sql: str) -> tuple[Any, ...] | None:
         if not self.connection: raise NoDatabaseConnection("Connection does not exist.")
 
         if not sql: raise EmptySQLQueryException("SQL Query provided is Null.")
@@ -79,7 +80,7 @@ class DBLayerAccess:
         with self.connection.cursor() as cur:
             return self.fetch_one(cur, sql)
 
-    def execute_update(self, sql:str) -> tuple:
+    def execute_update(self, sql:str) -> tuple[Any, ...] | None:
         if not self.connection: raise NoDatabaseConnection("Connection does not exist.")
 
         if not sql: raise EmptySQLQueryException("SQL Query provided is Null.")
