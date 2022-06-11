@@ -5,14 +5,19 @@ from db.db import DBLayerAccess
 
 import json
 
-from typing import Any, ClassVar
-
 SCHEMA_PATH = "../schema/"
 
 def read_schema(path: str) -> dict:
 
     with open(path) as f:
         return json.load(f)
+
+class NotFoundError(Exception):
+    pass
+class NoRecordsError(Exception):
+    pass
+class NotInsertedError(Exception):
+    pass
 
 class PieceMapper:
     """ Dataclass to map SQL Logic to Domain Logic for a Piece. """
@@ -24,17 +29,29 @@ class PieceMapper:
         if not id: raise TypeError("Expect an integer.")
         
         sql = f"SELECT * FROM pieces WHERE id={id} LIMIT 1"
-        return self.map_row_to_obj(self.db_layer.execute_fetch_one(sql))
+        res = self.db_layer.select(sql)
+
+        if not res: raise NotFoundError()
+
+        return self.map_row_to_obj(res[0])
 
     def findall(self) -> list[Piece]:
         sql = f"SELECT * FROM pieces"
-        return [self.map_row_to_obj(row) for row in self.db_layer.select(sql)]
+        res = self.db_layer.select(sql)
+
+        if not res: raise NoRecordsError()
+
+        return [self.map_row_to_obj(row) for row in res]
 
     def insert(self, piece: Piece) -> Piece:
         if not isinstance(piece, Piece): raise TypeError("A piece object is expected.")
         
         sql = f"INSERT INTO pieces (title, content) VALUES ('{piece.title}', '{piece.content}') RETURNING *;"
-        return self.map_row_to_obj(self.db_layer.insert(sql))
+        res = self.db_layer.select(sql)
+
+        if not res: raise NotInsertedError()
+
+        return self.map_row_to_obj(res[0])
 
     def update(self, piece: Piece) -> Piece:
         if not isinstance(piece, Piece): raise TypeError("A piece object is expected.")
@@ -48,17 +65,13 @@ class PieceMapper:
             return piece
 
         sql = f"UPDATE pieces SET title = '{piece.title}', content = '{piece.content}' WHERE id = {piece.id} RETURNING *;"
-        return self.map_row_to_obj(self.db_layer.update(sql))
+        res =  self.db_layer.update(sql)
 
-    def map_row_to_obj(self, row: tuple[Any, ...] | None) -> Piece:
-        # Might raise little too early, returning None and handling later might be better
-        if not row: raise TypeError("A record tuple is expected.")
+        if not res: raise NotInsertedError()
 
-        new_dict = {}
-        # Expected order of schema and rows / column. Might need fix one day
-        #for index, key in enumerate(Piece.schema.keys()):
-        #    new_dict[key] = row[index]
-        # TODO: Create from db properly
+        return self.map_row_to_obj(res[0])
+
+    def map_row_to_obj(self, row: dict) -> Piece:
         return Piece(**row)
 
 
@@ -72,7 +85,7 @@ class DocumentMapper:
         if not id: raise TypeError("Expect an integer.")
 
         sql = f"SELECT * FROM documents WHERE id={str(id)} LIMIT 1"
-        return self.map_row_to_obj(self.db_layer.execute_fetch_one(sql))
+        return self.map_row_to_obj(self.db_layer.select(sql))
 
     def findall(self) -> list[Document]:
         # Strong hypothesis : DB is light
