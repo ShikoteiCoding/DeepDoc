@@ -32,7 +32,7 @@ CREATE SEQUENCE doc_id_pk_seq
     NO MAXVALUE
     CACHE 1;
 
-CREATE TABLE IF NOT EXISTS docs (
+CREATE TABLE IF NOT EXISTS documents (
     id INT NOT NULL DEFAULT nextval('doc_id_pk_seq'),
     title TEXT NOT NULL,
     content TEXT NOT NULL,
@@ -42,7 +42,7 @@ CREATE TABLE IF NOT EXISTS docs (
 );
 
 CREATE TRIGGER set_timestamp
-BEFORE UPDATE ON docs
+BEFORE UPDATE ON documents
 FOR EACH ROW
 EXECUTE PROCEDURE trigger_set_timestamp();
 
@@ -54,6 +54,6 @@ CREATE TABLE IF NOT EXISTS docs_pieces_rel (
             REFERENCES pieces(id),
     CONSTRAINT fk_docs
         FOREIGN KEY (docs_id) 
-            REFERENCES docs(id)
+            REFERENCES documents(id)
 );
 

@@ -9,15 +9,14 @@ For now, the actions are not yet dockerized because it's still in a dev phase. S
 ### Setup the db
 ```
 cd deep-doc
-docker compose up
+docker compose up -d
 ```
 ### Delete
 If need to debuild the docker because of schema change. Don't forget to delete both the container and the volume.
 
 After a docker compose up you can :
 ```
-docker rm db-deep-doc
-docker volume rm deep-doc_deep-doc-data
+docker rm db-deep-doc && docker volume rm deep-doc_deep-doc-data
 ```
 
 ## Python 
