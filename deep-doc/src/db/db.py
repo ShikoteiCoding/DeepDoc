@@ -1,5 +1,7 @@
 from typing import Any
 import psycopg2
+import psycopg2.extras
+
 from psycopg2.extensions import cursor as Cursor
 from config import Config
 
@@ -61,7 +63,7 @@ class DBLayerAccess:
 
         if not sql: raise EmptySQLQueryException("SQL Query provided is Null.")
 
-        with self.connection.cursor() as cur:
+        with self.connection.cursor(cursor_factory = psycopg2.extras.RealDictCursor) as cur:
             return self.fetch_one(cur, sql)
                         
     def execute_fetch_all(self, sql) -> list[tuple[Any, ...]] | None:
@@ -69,7 +71,7 @@ class DBLayerAccess:
 
         if not sql: raise EmptySQLQueryException("SQL Query provided is Null.")
 
-        with self.connection.cursor() as cur:
+        with self.connection.cursor(cursor_factory = psycopg2.extras.RealDictCursor) as cur:
             return self.fetch_multiple(cur, sql)
     
     def execute_insert(self, sql: str) -> tuple[Any, ...] | None:
@@ -77,7 +79,7 @@ class DBLayerAccess:
 
         if not sql: raise EmptySQLQueryException("SQL Query provided is Null.")
 
-        with self.connection.cursor() as cur:
+        with self.connection.cursor(cursor_factory = psycopg2.extras.RealDictCursor) as cur:
             return self.fetch_one(cur, sql)
 
     def execute_update(self, sql:str) -> tuple[Any, ...] | None:
@@ -85,5 +87,5 @@ class DBLayerAccess:
 
         if not sql: raise EmptySQLQueryException("SQL Query provided is Null.")
 
-        with self.connection.cursor() as cur:
+        with self.connection.cursor(cursor_factory = psycopg2.extras.RealDictCursor) as cur:
             return self.fetch_one(cur, sql)

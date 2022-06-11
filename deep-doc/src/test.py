@@ -25,7 +25,7 @@ class PieceTest(unittest.TestCase):
         self.assertIsNone(piece.modify_date)
 
     def test_wrong_piece_instance(self):
-        self.assertRaises(AttributeError, Piece, {"titl": "Title", "conten": "Content"})
+        self.assertRaises(TypeError, Piece, **{"titl": "Title", "conten": "Content"})
 
 class DocTest(unittest.TestCase):
 
@@ -39,7 +39,7 @@ class DocTest(unittest.TestCase):
         self.assertIsNone(doc.modify_date)
 
     def test_wrong_doc_instance(self):
-        self.assertRaises(AttributeError, Document, {"titl": "Title", "conten": "Content"})
+        self.assertRaises(TypeError, Document, **{"titl": "Title", "conten": "Content"})
 
 class DBMappingTest(unittest.TestCase):
 

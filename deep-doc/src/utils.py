@@ -1,6 +1,8 @@
 from domain_types.piece import Piece
 from domain_types.document import Document
 
+from db.db import DBLayerAccess
+
 import json
 
 from typing import Any, ClassVar
@@ -15,7 +17,7 @@ def read_schema(path: str) -> dict:
 class PieceMapper:
     """ Dataclass to map SQL Logic to Domain Logic for a Piece. """
 
-    def __init__(self, db_layer: 'DBLayerAccess'):
+    def __init__(self, db_layer: DBLayerAccess):
         self.db_layer = db_layer
 
     def find(self, id: int) -> Piece:
@@ -48,7 +50,7 @@ class PieceMapper:
         sql = f"UPDATE pieces SET title = '{piece.title}', content = '{piece.content}' WHERE id = {piece.id} RETURNING *;"
         return self.map_row_to_obj(self.db_layer.execute_update(sql))
 
-    def map_row_to_obj(self, row: tuple) -> Piece:
+    def map_row_to_obj(self, row: dict) -> Piece:
         # Might raise little too early, returning None and handling later might be better
         if not row: raise TypeError("A record tuple is expected.")
 
@@ -57,7 +59,7 @@ class PieceMapper:
         #for index, key in enumerate(Piece.schema.keys()):
         #    new_dict[key] = row[index]
         # TODO: Create from db properly
-        return Piece(**new_dict)
+        return Piece(**row)
 
 
 class DocumentMapper:
@@ -104,7 +106,7 @@ class DocumentMapper:
         #for index, key in enumerate(Document.schema.keys()):
         #    new_dict[key] = row[index]
         # TODO: Create from db properly
-        return Document(**new_dict)
+        return Document(**row)
 
 ##
 #   Parser Functions
