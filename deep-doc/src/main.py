@@ -1,5 +1,8 @@
 import psycopg2
-from utils import Config, DBLayerAccess, Piece, Doc, DocParser, PieceMapper, DocMapper
+from utils import Config, DBLayerAccess, DocParser, PieceMapper, DocMapper
+
+from domain_types.piece import Piece
+from domain_types.document import Document
 
 if __name__ == '__main__':
     
@@ -8,7 +11,6 @@ if __name__ == '__main__':
     db_layer.connect()
     piece_mapper = PieceMapper(db_layer)
     doc_mapper = DocMapper(db_layer)
-
     
 
     db_layer.close()

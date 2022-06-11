@@ -1,14 +1,17 @@
-from utils import DBLayerAccess, Piece, Doc, Config, PieceMapper, DocMapper, DocParser
+from utils import DBLayerAccess, Config, PieceMapper, DocMapper, DocParser
 # This is sample testing, no real and serious unit tests to be implemented
 # Used to assert that code evolutions should not make the existing one crash
 # Can also be use to DB changes by adding the changes in the Mappers
+
+from domain_types.piece import Piece
+from domain_types.document import Document
 
 import unittest
 
 class PieceTest(unittest.TestCase):
 
     def test_correct_piece_instance(self):
-        piece = Piece({"title": "Title", "content": "Content"})
+        piece = Piece(**{"title": "Title", "content": "Content"})
         self.assertIsInstance(piece, Piece)
         self.assertIsNone(piece.id)
         self.assertTrue(piece.title, "Title")
@@ -22,8 +25,8 @@ class PieceTest(unittest.TestCase):
 class DocTest(unittest.TestCase):
 
     def test_correct_doc_instance(self):
-        doc = Doc({"title": "Title", "content": "Content"})
-        self.assertIsInstance(doc, Doc)
+        doc = Document(**{"title": "Title", "content": "Content"})
+        self.assertIsInstance(doc, Document)
         self.assertIsNone(doc.id)
         self.assertTrue(doc.title, "Title")
         self.assertTrue(doc.content, "Content")
@@ -31,7 +34,7 @@ class DocTest(unittest.TestCase):
         self.assertIsNone(doc.modify_date)
 
     def test_wrong_doc_instance(self):
-        self.assertRaises(AttributeError, Doc, {"titl": "Title", "conten": "Content"})
+        self.assertRaises(AttributeError, Document, {"titl": "Title", "conten": "Content"})
 
 class DBMappingTest(unittest.TestCase):
 
@@ -42,7 +45,7 @@ class DBMappingTest(unittest.TestCase):
         db_layer = DBLayerAccess(c)
         db_layer.connect()
         piece_mapper = PieceMapper(db_layer)
-        piece = Piece({"title": "Title", "content": "Content"})
+        piece = Piece(**{"title": "Title", "content": "Content"})
         inserted_piece = piece_mapper.insert(piece)
 
         self.assertIsNotNone(inserted_piece)
@@ -53,7 +56,7 @@ class DBMappingTest(unittest.TestCase):
         self.assertTrue(inserted_piece.content, "Content")
         self.assertIsNotNone(inserted_piece.create_date)
         self.assertIsNotNone(inserted_piece.modify_date)
-        self.assertAlmostEqual(inserted_piece.create_date, inserted_piece.modify_date)
+        self.assertEqual(inserted_piece.create_date, inserted_piece.modify_date)
         
         self.assertEqual(piece.title, inserted_piece.title)
         self.assertEqual(piece.content, inserted_piece.content)
@@ -67,18 +70,18 @@ class DBMappingTest(unittest.TestCase):
         db_layer = DBLayerAccess(c)
         db_layer.connect()
         doc_mapper = DocMapper(db_layer)
-        doc = Doc({"title": "Title", "content": "Content"})
+        doc = Document(**{"title": "Title", "content": "Content"})
         inserted_doc = doc_mapper.insert(doc)
 
         self.assertIsNotNone(inserted_doc)
-        self.assertIsInstance(inserted_doc, Doc)
+        self.assertIsInstance(inserted_doc, Document)
 
         self.assertIsNotNone(inserted_doc.id)
         self.assertTrue(inserted_doc.title, "Title")
         self.assertTrue(inserted_doc.content, "Content")
         self.assertIsNotNone(inserted_doc.create_date)
         self.assertIsNotNone(inserted_doc.modify_date)
-        self.assertAlmostEqual(inserted_doc.create_date, inserted_doc.modify_date)
+        self.assertEqual(inserted_doc.create_date, inserted_doc.modify_date)
         
         self.assertEqual(doc.title, inserted_doc.title)
         self.assertEqual(doc.content, inserted_doc.content)
@@ -91,7 +94,7 @@ class DBMappingTest(unittest.TestCase):
         db_layer = DBLayerAccess(c)
         db_layer.connect()
         piece_mapper = PieceMapper(db_layer)
-        piece = Piece({"title": "Title", "content": "Content"})
+        piece = Piece(**{"title": "Title", "content": "Content"})
         inserted_piece = piece_mapper.insert(piece)
 
         found_piece = piece_mapper.find(inserted_piece.id)
@@ -107,12 +110,12 @@ class DBMappingTest(unittest.TestCase):
         db_layer = DBLayerAccess(c)
         db_layer.connect()
         doc_mapper = DocMapper(db_layer)
-        doc = Doc({"title": "Title", "content": "Content"})
+        doc = Document(**{"title": "Title", "content": "Content"})
         inserted_doc = doc_mapper.insert(doc)
 
         found_doc = doc_mapper.find(inserted_doc.id)
 
-        self.assertIsInstance(found_doc, Doc)
+        self.assertIsInstance(found_doc, Document)
         self.assertEqual(inserted_doc, found_doc)
 
         db_layer.close()
@@ -123,10 +126,10 @@ class DBMappingTest(unittest.TestCase):
         db_layer = DBLayerAccess(c)
         db_layer.connect()
         piece_mapper = PieceMapper(db_layer)
-        piece = Piece({"title": "Title", "content": "Content"})
+        piece = Piece(**{"title": "Title", "content": "Content"})
         inserted_piece = piece_mapper.insert(piece)
 
-        updated_piece = Piece({
+        updated_piece = Piece(**{
             "id": inserted_piece.id,
             "title": "new title",
             "content": "update this piece",
@@ -158,10 +161,10 @@ class DBMappingTest(unittest.TestCase):
         db_layer = DBLayerAccess(c)
         db_layer.connect()
         doc_mapper = DocMapper(db_layer)
-        doc = Doc({"title": "Title", "content": "Content"})
+        doc = Document(**{"title": "Title", "content": "Content"})
         inserted_doc = doc_mapper.insert(doc)
 
-        updated_doc = Doc({
+        updated_doc = Document(**{
             "id": inserted_doc.id,
             "title": "new title",
             "content": "update this piece",

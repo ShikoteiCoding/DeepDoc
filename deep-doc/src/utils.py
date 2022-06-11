@@ -1,5 +1,8 @@
-from dataclasses import KW_ONLY, dataclass
+from dataclasses import dataclass
 from datetime import datetime
+
+from domain_types.piece import Piece
+from domain_types.document import Document
 
 import json
 import psycopg2
@@ -13,22 +16,6 @@ def read_schema(path: str) -> dict:
 
     with open(path) as f:
         return json.load(f)
-
-##
-## Declare classes
-##
-class Config:
-    pass
-class Piece:
-    pass
-class Doc:
-    pass
-class PieceMapper:
-    pass
-class DocMapper:
-    pass
-class DBLayerAccess:
-    pass
 
 ##
 ## Project config
@@ -46,43 +33,43 @@ class Config:
 ##
 ##  Classes for the Datbase Object Model
 ##
-class Piece:
-    """ Domain model of a Piece. """
-
-    schema: ClassVar[dict] = read_schema(SCHEMA_PATH + "piece.json")
-    schema_fields: ClassVar[list] = list(schema.keys())
-
-    def __init__(self, values: dict):
-        for key in Piece.schema:
-            setattr(self, key, None)
-        for (attribute, value) in values.items():
-            if not attribute in Piece.schema_fields: raise AttributeError("Attribute does not exist in Piece Schema.", attribute)
-            setattr(self, attribute, value)
-
-    def __eq__(self, other: Piece):
-        if not (isinstance(other, Piece)): raise TypeError("A piece object is expected.")
-        
-        for key in Piece.schema:
-            if (getattr(self, key) != getattr(other, key)): return False
-        return True
-
-    def __str__(self):
-        str_print = ""
-        for key in Piece.schema:
-            str_print += (key + ": " + str(getattr(self, key)) + "\n")
-        return str_print
-
-    def __repr__(self) -> str:
-        str_repr = "Piece("
-        for (index, key) in enumerate(Piece.schema):
-            str_repr += f"\"{key}\": \"{str(getattr(self, key))}\"" + (", " if index + 1 < len(Piece.schema) else "")
-        return str_repr + ")"
+#class OldPiece:
+#    """ Domain model of a Piece. """
+#
+#    schema: ClassVar[dict] = read_schema(SCHEMA_PATH + "piece.json")
+#    schema_fields: ClassVar[list] = list(schema.keys())
+#
+#    def __init__(self, values: dict):
+#        for key in OldPiece.schema:
+#            setattr(self, key, None)
+#        for (attribute, value) in values.items():
+#            if not attribute in OldPiece.schema_fields: raise AttributeError("Attribute does not exist in Piece Schema.", attribute)
+#            setattr(self, attribute, value)
+#
+#    def __eq__(self, other: 'OldPiece'):
+#        if not (isinstance(other, Piece)): raise TypeError("A piece object is expected.")
+#        
+#        for key in OldPiece.schema:
+#            if (getattr(self, key) != getattr(other, key)): return False
+#        return True
+#
+#    def __str__(self):
+#        str_print = ""
+#        for key in OldPiece.schema:
+#            str_print += (key + ": " + str(getattr(self, key)) + "\n")
+#        return str_print
+#
+#    def __repr__(self) -> str:
+#        str_repr = "Piece("
+#        for (index, key) in enumerate(OldPiece.schema):
+#            str_repr += f"\"{key}\": \"{str(getattr(self, key))}\"" + (", " if index + 1 < len(OldPiece.schema) else "")
+#        return str_repr + ")"
 
 
 class PieceMapper:
     """ Dataclass to map SQL Logic to Domain Logic for a Piece. """
 
-    def __init__(self, db_layer: DBLayerAccess):
+    def __init__(self, db_layer: 'DBLayerAccess'):
         self.db_layer = db_layer
 
     def find(self, id: int) -> Piece:
@@ -121,42 +108,43 @@ class PieceMapper:
 
         new_dict = {}
         # Expected order of schema and rows / column. Might need fix one day
-        for index, key in enumerate(Piece.schema.keys()):
-            new_dict[key] = row[index]
-        return Piece(new_dict)
+        #for index, key in enumerate(Piece.schema.keys()):
+        #    new_dict[key] = row[index]
+        # TODO: Create from db properly
+        return Piece(**new_dict)
 
 
-class Doc:
-    """ Domain model of a doc. """
-
-    schema: ClassVar[dict] = read_schema(SCHEMA_PATH + "doc.json")
-    schema_fields: ClassVar[list] = list(schema.keys())
-
-    def __init__(self, values: dict):
-        for key in Doc.schema:
-            setattr(self, key, None)
-        for (attribute, value) in values.items():
-            if not attribute in Doc.schema_fields: raise AttributeError("Attribute does not exist in Doc Schema.", attribute)
-            setattr(self, attribute, value)
-
-    def __eq__(self, other: Doc):
-        if not (isinstance(other, Doc)): raise TypeError("Expect a Doc to compare with.")
-        
-        for key in Doc.schema:
-            if not (getattr(self, key) == getattr(other, key)): return False
-        return True
-
-    def __str__(self):
-        str_print = ''
-        for key in Doc.schema:
-            str_print += (key + ': ' + str(getattr(self, key)) + '\n')
-        return str_print
-
-    def __repr__(self) -> str:
-        str_repr = 'Doc('
-        for (index, key) in enumerate(Doc.schema):
-            str_repr += f"\"{key}\": \"{str(getattr(self, key))}\"" + (", " if index + 1 < len(Doc.schema) else "")
-        return str_repr + ')'
+#class Doc:
+#    """ Domain model of a doc. """
+#
+#    schema: ClassVar[dict] = read_schema(SCHEMA_PATH + "doc.json")
+#    schema_fields: ClassVar[list] = list(schema.keys())
+#
+#    def __init__(self, values: dict):
+#        for key in Doc.schema:
+#            setattr(self, key, None)
+#        for (attribute, value) in values.items():
+#            if not attribute in Doc.schema_fields: raise AttributeError("Attribute does not exist in Doc Schema.", attribute)
+#            setattr(self, attribute, value)
+#
+#    def __eq__(self, other: Doc):
+#        if not (isinstance(other, Doc)): raise TypeError("Expect a Doc to compare with.")
+#        
+#        for key in Doc.schema:
+#            if not (getattr(self, key) == getattr(other, key)): return False
+#        return True
+#
+#    def __str__(self):
+#        str_print = ''
+#        for key in Doc.schema:
+#            str_print += (key + ': ' + str(getattr(self, key)) + '\n')
+#        return str_print
+#
+#    def __repr__(self) -> str:
+#        str_repr = 'Doc('
+#        for (index, key) in enumerate(Doc.schema):
+#            str_repr += f"\"{key}\": \"{str(getattr(self, key))}\"" + (", " if index + 1 < len(Doc.schema) else "")
+#        return str_repr + ')'
 
 
 class DocMapper:
@@ -165,25 +153,25 @@ class DocMapper:
     def __init__(self, db_layer):
         self.db_layer = db_layer
 
-    def find(self, id: int) -> Doc:
+    def find(self, id: int) -> Document:
         if not id: raise TypeError("Expect an integer.")
 
         sql = f"SELECT * FROM docs WHERE id={str(id)} LIMIT 1"
         return self.map_row_to_obj(self.db_layer.execute_fetch_one(sql))
 
-    def findall(self) -> list[Doc]:
+    def findall(self) -> list[Document]:
         # Strong hypothesis : DB is light
         sql = f"SELECT * FROM docs"
         return [self.map_row_to_obj(row) for row in self.db_layer.execute_fetch_all(sql)]
 
-    def insert(self, doc: Doc) -> Doc:
-        if not isinstance(doc, Doc): raise TypeError("A doc object is expected.")
+    def insert(self, doc: Document) -> Document:
+        if not isinstance(doc, Document): raise TypeError("A doc object is expected.")
 
         sql = f"INSERT INTO docs (title, content) VALUES ('{doc.title}', '{doc.content}') RETURNING *;"
         return self.map_row_to_obj(self.db_layer.execute_insert(sql))
 
-    def update(self, doc: Doc) -> Doc:
-        if not isinstance(doc, Doc): raise TypeError("A doc object is expected.")
+    def update(self, doc: Document) -> Document:
+        if not isinstance(doc, Document): raise TypeError("A doc object is expected.")
         
         if not doc.id or not doc.content: raise AttributeError("Attribute of doc object does not exist.")
         
@@ -196,13 +184,14 @@ class DocMapper:
         sql = f"UPDATE docs SET content = '{doc.content}', title = '{doc.title}' WHERE id = {doc.id} RETURNING *;"
         return self.map_row_to_obj(self.db_layer.execute_update(sql))
 
-    def map_row_to_obj(self, row: tuple) -> Doc:
+    def map_row_to_obj(self, row: tuple) -> Document:
         if not row: raise TypeError("A record tuple is expected.")
 
         new_dict = {}
-        for index, key in enumerate(Doc.schema.keys()):
-            new_dict[key] = row[index]
-        return Doc(new_dict)
+        #for index, key in enumerate(Document.schema.keys()):
+        #    new_dict[key] = row[index]
+        # TODO: Create from db properly
+        return Document(**new_dict)
 
 ##
 #   Parser Functions
@@ -213,8 +202,8 @@ class DocParser:
     """ Static class to hold parsing functions. """
 
     @staticmethod
-    def read(doc: Doc, piece_mapper: PieceMapper) -> str:
-        if not isinstance(doc, Doc) or not isinstance(piece_mapper, PieceMapper): raise TypeError("Expect a doc object and a piece mapper object.")
+    def read(doc: Document, piece_mapper: PieceMapper) -> str:
+        if not isinstance(doc, Document) or not isinstance(piece_mapper, PieceMapper): raise TypeError("Expect a doc object and a piece mapper object.")
 
         piece_refs = DocParser.extract_piece_references(doc)
         doc_associated_pieces = [piece_mapper.find(piece_id) for piece_id in piece_refs]
@@ -222,20 +211,20 @@ class DocParser:
         return DocParser.replace_piece_references(doc, piece_refs, pieces)
 
     @staticmethod
-    def extract_piece_references(doc: Doc) -> list[str]:
+    def extract_piece_references(doc: Document) -> list[str]:
         # Might not need to be called "on read" but "on save"
         # Because we can use a different relation table to track saved pieces associated to doc
         # Upsert to avoid adding already existing relations ?
         content = doc.content
-        pattern = re.compile('\@(.*?)@')
+        pattern = re.compile('@(.*?)@')
         matches = pattern.findall(content)
         return matches
 
     @staticmethod
-    def replace_piece_references(doc: Doc, piece_refs: list[str], pieces: dict[str, str]) -> str:
+    def replace_piece_references(doc: Document, piece_refs: list[str], pieces: dict[str, str]) -> str:
         content = doc.content
         for piece_ref in piece_refs:
-            content = content.replace(f"\@{str(piece_ref)}@", pieces.get(piece_ref))
+            content = content.replace(f"@{str(piece_ref)}@", pieces.get(piece_ref))
         return content
 
 ##
