@@ -1,3 +1,4 @@
+from typing import Any
 from domain_types.piece import Piece
 from domain_types.document import Document
 
@@ -33,15 +34,15 @@ class PieceMapper:
 
         if not res: raise NotFoundError()
 
-        return self.map_row_to_obj(res[0])
+        return Piece(**res[0])
 
-    def findall(self) -> list[Piece]:
+    def find_all(self) -> list[Piece]:
         sql = f"SELECT * FROM pieces"
         res = self.db_layer.select(sql)
 
-        if not res: raise NoRecordsError()
+        if not res or len(res) == 0: raise NoRecordsError()
 
-        return [self.map_row_to_obj(row) for row in res]
+        return [Piece(**row) for row in res]
 
     def insert(self, piece: Piece) -> Piece:
         if not isinstance(piece, Piece): raise TypeError("A piece object is expected.")
@@ -51,7 +52,7 @@ class PieceMapper:
 
         if not res: raise NotInsertedError()
 
-        return self.map_row_to_obj(res[0])
+        return Piece(**res[0])
 
     def update(self, piece: Piece) -> Piece:
         if not isinstance(piece, Piece): raise TypeError("A piece object is expected.")
@@ -69,34 +70,43 @@ class PieceMapper:
 
         if not res: raise NotInsertedError()
 
-        return self.map_row_to_obj(res[0])
-
-    def map_row_to_obj(self, row: dict) -> Piece:
-        return Piece(**row)
+        return Piece(**res[0])
 
 
 class DocumentMapper:
     """ Dataclass to map SQL Logic to Domain Logic for a Piece. """
 
-    def __init__(self, db_layer):
+    def __init__(self, db_layer: DBLayerAccess):
         self.db_layer = db_layer
 
     def find(self, id: int) -> Document:
         if not id: raise TypeError("Expect an integer.")
 
         sql = f"SELECT * FROM documents WHERE id={str(id)} LIMIT 1"
-        return self.map_row_to_obj(self.db_layer.select(sql))
+        res = self.db_layer.select(sql)
 
-    def findall(self) -> list[Document]:
+        if not res: raise NotFoundError()
+
+        return Document(**res[0])
+
+    def find_all(self) -> list[Document]:
         # Strong hypothesis : DB is light
         sql = f"SELECT * FROM documents"
-        return [self.map_row_to_obj(row) for row in self.db_layer.execute_fetch_all(sql)]
+        res = self.db_layer.select(sql)
+
+        if not res or len(res) == 0: raise NotFoundError()
+
+        return [Document(**row) for row in res]
 
     def insert(self, doc: Document) -> Document:
         if not isinstance(doc, Document): raise TypeError("A doc object is expected.")
 
         sql = f"INSERT INTO documents (title, content) VALUES ('{doc.title}', '{doc.content}') RETURNING *;"
-        return self.map_row_to_obj(self.db_layer.execute_insert(sql))
+        res = self.db_layer.insert(sql)
+
+        if not res: raise NotFoundError()
+
+        return Document(**res[0])
 
     def update(self, doc: Document) -> Document:
         if not isinstance(doc, Document): raise TypeError("A doc object is expected.")
@@ -110,16 +120,11 @@ class DocumentMapper:
             return doc
         
         sql = f"UPDATE documents SET content = '{doc.content}', title = '{doc.title}' WHERE id = {doc.id} RETURNING *;"
-        return self.map_row_to_obj(self.db_layer.execute_update(sql))
+        res = self.db_layer.update(sql)
 
-    def map_row_to_obj(self, row: tuple) -> Document:
-        if not row: raise TypeError("A record tuple is expected.")
+        if not res: raise NotFoundError()
 
-        new_dict = {}
-        #for index, key in enumerate(Document.schema.keys()):
-        #    new_dict[key] = row[index]
-        # TODO: Create from db properly
-        return Document(**row)
+        return Document(**res[0])
 
 ##
 #   Parser Functions
