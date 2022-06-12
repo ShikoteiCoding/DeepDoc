@@ -24,7 +24,7 @@ class PieceMapper:
     def __init__(self, db_layer: DBLayerAccess):
         self.db_layer = db_layer
 
-    def find(self, id: int) -> Piece:
+    def find(self, id: int | None) -> Piece:
         if not id: raise TypeError("Expect an integer.")
         
         sql = f"SELECT * FROM pieces WHERE id={id} LIMIT 1"
@@ -42,7 +42,7 @@ class PieceMapper:
 
         return [Piece(**row) for row in res]
 
-    def insert(self, piece: Piece) -> Piece:
+    def insert(self, piece: Piece | None) -> Piece:
         if not isinstance(piece, Piece): raise TypeError("A piece object is expected.")
         
         sql = f"INSERT INTO pieces (title, content) VALUES ('{piece.title}', '{piece.content}') RETURNING *;"
@@ -52,7 +52,7 @@ class PieceMapper:
 
         return Piece(**res[0])
 
-    def update(self, piece: Piece) -> Piece:
+    def update(self, piece: Piece | None) -> Piece:
         if not isinstance(piece, Piece): raise TypeError("A piece object is expected.")
 
         if not piece.id or not piece.content: raise AttributeError("Attribute of piece object does not exist.")
@@ -77,7 +77,7 @@ class DocumentMapper:
     def __init__(self, db_layer: DBLayerAccess):
         self.db_layer = db_layer
 
-    def find(self, id: int) -> Document:
+    def find(self, id: int | None) -> Document:
         if not id: raise TypeError("Expect an integer.")
 
         sql = f"SELECT * FROM documents WHERE id={str(id)} LIMIT 1"
@@ -96,7 +96,7 @@ class DocumentMapper:
 
         return [Document(**row) for row in res]
 
-    def insert(self, doc: Document) -> Document:
+    def insert(self, doc: Document | None) -> Document:
         if not isinstance(doc, Document): raise TypeError("A doc object is expected.")
 
         sql = f"INSERT INTO documents (title, content) VALUES ('{doc.title}', '{doc.content}') RETURNING *;"
@@ -106,7 +106,7 @@ class DocumentMapper:
 
         return Document(**res[0])
 
-    def update(self, doc: Document) -> Document:
+    def update(self, doc: Document | None) -> Document:
         if not isinstance(doc, Document): raise TypeError("A doc object is expected.")
         
         if not doc.id or not doc.content: raise AttributeError("Attribute of doc object does not exist.")
@@ -134,15 +134,18 @@ class DocumentParser:
 
     @staticmethod
     def read(doc: Document, piece_mapper: PieceMapper) -> str:
-        if not isinstance(doc, Document) or not isinstance(piece_mapper, PieceMapper): raise TypeError("Expect a doc object and a piece mapper object.")
+        if not isinstance(doc, Document) or not isinstance(piece_mapper, PieceMapper): 
+            raise TypeError("Expect a doc object and a piece mapper object.")
 
-        piece_refs = DocumentParser.extract_piece_references(doc)
-        doc_associated_pieces = [piece_mapper.find(piece_id) for piece_id in piece_refs]
-        pieces = {str(piece.id): str(piece.content) for piece in doc_associated_pieces}
-        return DocumentParser.replace_piece_references(doc, piece_refs, pieces)
+        piece_refs = DocumentParser.extract_piece_ids(doc)
+
+        # Regex match ids. Extract is type-safe. Cast the id to integer.
+        doc_associated_pieces = [piece_mapper.find(int(piece_id)) for piece_id in piece_refs]
+        pieces_dict = {str(piece.id): str(piece.content) for piece in doc_associated_pieces}
+        return DocumentParser.replace_piece_ids(doc, pieces_dict)
 
     @staticmethod
-    def extract_piece_references(doc: Document) -> list[str]:
+    def extract_piece_ids(doc: Document) -> list[str]:
         # Might not need to be called "on read" but "on save"
         # Because we can use a different relation table to track saved pieces associated to doc
         # Upsert to avoid adding already existing relations ?
@@ -152,8 +155,8 @@ class DocumentParser:
         return matches
 
     @staticmethod
-    def replace_piece_references(doc: Document, piece_refs: list[str], pieces: dict[str, str]) -> str:
+    def replace_piece_ids(doc: Document, pieces_dict: dict[str, str]) -> str:
         content = doc.content
-        for piece_ref in piece_refs:
-            content = content.replace(f"@{str(piece_ref)}@", pieces.get(piece_ref))
+        for key, value in pieces_dict.items():
+            content = content.replace(f"@{str(key)}@", value)
         return content
