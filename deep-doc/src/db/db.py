@@ -1,16 +1,14 @@
 from typing import Any
 import psycopg2
-import psycopg2.extras
 
-from psycopg2.extras import RealDictCursor, RealDictConnection, RealDictRow
-
+from psycopg2.extras import RealDictCursor
 from psycopg2.extensions import cursor as Cursor
+
 from config import Config
 
 ##
 #   Higher level Exceptions for DB
 ##
-
 class EmptySQLQueryException(TypeError):
     pass
 class NoDatabaseConnection(Exception):
@@ -49,13 +47,6 @@ class DBLayerAccess:
         self.connection.close()
         print("DB Success - Connection to DB closed")
 
-    #def fetch_one(self, cursor: Cursor, sql: str) -> dict | None:
-    #    """ Method used to execute a query which returns exactly one record if found. """
-    #    cursor.execute(sql)
-    #    res = cursor.fetchone()
-    #    self.commit()
-    #    return RealDictRow(res)
-
     def execute(self, cursor: Cursor, sql: str) -> list[dict] | None:
         """ Method used to execute a query which returns multiple records if found. """
         cursor.execute(sql)
@@ -68,7 +59,7 @@ class DBLayerAccess:
 
         if not sql: raise EmptySQLQueryException("SQL Query provided is Null.")
 
-        with self.connection.cursor(cursor_factory = psycopg2.extras.RealDictCursor) as cur:
+        with self.connection.cursor(cursor_factory = RealDictCursor) as cur:
             return self.execute(cur, sql)
     
     def insert(self, sql: str) -> list[dict] | None:
@@ -76,7 +67,7 @@ class DBLayerAccess:
 
         if not sql: raise EmptySQLQueryException("SQL Query provided is Null.")
 
-        with self.connection.cursor(cursor_factory = psycopg2.extras.RealDictCursor) as cur:
+        with self.connection.cursor(cursor_factory = RealDictCursor) as cur:
             return self.execute(cur, sql)
 
     def update(self, sql:str) -> list[dict] | None:
@@ -84,5 +75,5 @@ class DBLayerAccess:
 
         if not sql: raise EmptySQLQueryException("SQL Query provided is Null.")
 
-        with self.connection.cursor(cursor_factory = psycopg2.extras.RealDictCursor) as cur:
+        with self.connection.cursor(cursor_factory = RealDictCursor) as cur:
             return self.execute(cur, sql)
