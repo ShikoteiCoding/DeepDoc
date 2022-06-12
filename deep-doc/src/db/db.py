@@ -47,13 +47,15 @@ class DBLayerAccess:
         self.connection.close()
         print("DB Success - Connection to DB closed")
 
-    def pg_execute(self, cursor: Cursor, sql: str, placeholder: tuple[str,...] | None) -> list[dict] | None:
+    def pg_execute(self, cursor: Cursor, sql: str, placeholder: tuple[str,...] | dict[str, str] | None) -> list[dict] | None:
+        """ Execute the query and get the response. """
         cursor.execute(sql, placeholder)
         res = cursor.fetchall()
         self.commit()
         return res #type: ignore
 
-    def execute(self, query: str, placeholder: tuple[str,...] | None = None) -> list[dict] | None:
+    def execute(self, query: str, placeholder: tuple[str,...] | dict[str, str] | None = None) -> list[dict] | None:
+        """ Execute method abstraction. """
         if not self.connection: raise NoDatabaseConnection("Connection does not exist.")
 
         if not query: raise EmptySQLQueryException("SQL Query provided is Null.")

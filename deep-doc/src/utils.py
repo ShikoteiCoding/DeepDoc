@@ -27,8 +27,10 @@ class PieceMapper:
         # SQL
         self.table = "pieces"
         self.pkey = "id"
+        self.mutable_columns = ['title', 'content']
 
     def find(self, id: int | None) -> Piece:
+        """ Return a specific item by primary key search. """
         if not id: raise TypeError("Expect an integer.")
         
         query = sql.SQL(
@@ -37,6 +39,7 @@ class PieceMapper:
             table = sql.Identifier(self.table),
             pkey = sql.Identifier(self.pkey)
         )
+
         res = self.db_layer.execute(query, (str(id),))
 
         if not res: raise NotFoundError()
@@ -44,11 +47,14 @@ class PieceMapper:
         return Piece(**res[0])
 
     def find_all(self) -> list[Piece]:
+        """ Return all items. """
+
         query = sql.SQL(
             "SELECT * FROM {table}"
         ).format(
             table = sql.Identifier(self.table)
         )
+
         res = self.db_layer.execute(query)
 
         if not res or len(res) == 0: raise NoRecordsError()
@@ -56,16 +62,29 @@ class PieceMapper:
         return [Piece(**row) for row in res]
 
     def insert(self, piece: Piece | None) -> Piece:
+        """ Insert one item. """
+
         if not isinstance(piece, Piece): raise TypeError("A piece object is expected.")
+
+        query = sql.SQL(
+            "INSERT INTO {table} ({mutable_columns}) VALUES ({place_holder}) RETURNING *;"
+        ).format(
+            table = sql.Identifier(self.table),
+            mutable_columns = sql.SQL(', ').join(map(sql.Identifier, self.mutable_columns)),
+            place_holder = sql.SQL(',').join(
+                [sql.Placeholder(c) for c in self.mutable_columns]
+            )
+        )
         
-        sql = f"INSERT INTO pieces (title, content) VALUES ('{piece.title}', '{piece.content}') RETURNING *;"
-        res = self.db_layer.execute(sql)
+        res = self.db_layer.execute(query, {str(col): str(getattr(piece, col)) for col in self.mutable_columns})
 
         if not res: raise NotInsertedError()
 
         return Piece(**res[0])
 
     def update(self, piece: Piece | None) -> Piece:
+        """ Update an existing item. """
+
         if not isinstance(piece, Piece): raise TypeError("A piece object is expected.")
 
         if not piece.id or not piece.content: raise AttributeError("Attribute of piece object does not exist.")
@@ -76,8 +95,20 @@ class PieceMapper:
             print("Model Warning - A record is not updated because has no changes") 
             return piece
 
-        sql = f"UPDATE pieces SET title = '{piece.title}', content = '{piece.content}' WHERE id = {piece.id} RETURNING *;"
-        res =  self.db_layer.execute(sql)
+        query = sql.SQL(
+            "UPDATE {table} SET ({mutable_columns}) VALUES ({place_holder}) WHERE {pkey} = {id} RETURNING *;"
+        ).format(
+            table = self.table,
+            mutable_columns = self.mutable_columns,
+            pkey = self.pkey,
+            place_holder = sql.SQL(',').join(
+                [sql.Placeholder(c) for c in self.mutable_columns]
+            ),
+            id = str(piece.id)
+        )
+
+        #sql = f"UPDATE pieces SET title = '{piece.title}', content = '{piece.content}' WHERE id = {piece.id} RETURNING *;"
+        res =  self.db_layer.execute(query, {str(col): str(getattr(piece, col)) for col in self.mutable_columns})
 
         if not res: raise NotInsertedError()
 
