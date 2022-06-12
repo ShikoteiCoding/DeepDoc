@@ -1,7 +1,7 @@
 from domain_types import Piece, Document
-
 from db import DBLayerAccess
 
+from psycopg2 import sql
 import json
 
 SCHEMA_PATH = "../schema/"
@@ -24,19 +24,32 @@ class PieceMapper:
     def __init__(self, db_layer: DBLayerAccess):
         self.db_layer = db_layer
 
+        # SQL
+        self.table = "pieces"
+        self.pkey = "id"
+
     def find(self, id: int | None) -> Piece:
         if not id: raise TypeError("Expect an integer.")
         
-        sql = f"SELECT * FROM pieces WHERE id={id} LIMIT 1"
-        res = self.db_layer.select(sql)
+        query = sql.SQL(
+            "SELECT * FROM {table} WHERE {pkey} = %s"
+        ).format(
+            table = sql.Identifier(self.table),
+            pkey = sql.Identifier(self.pkey)
+        )
+        res = self.db_layer.execute(query, (str(id),))
 
         if not res: raise NotFoundError()
 
         return Piece(**res[0])
 
     def find_all(self) -> list[Piece]:
-        sql = f"SELECT * FROM pieces"
-        res = self.db_layer.select(sql)
+        query = sql.SQL(
+            "SELECT * FROM {table}"
+        ).format(
+            table = sql.Identifier(self.table)
+        )
+        res = self.db_layer.execute(query)
 
         if not res or len(res) == 0: raise NoRecordsError()
 
@@ -46,7 +59,7 @@ class PieceMapper:
         if not isinstance(piece, Piece): raise TypeError("A piece object is expected.")
         
         sql = f"INSERT INTO pieces (title, content) VALUES ('{piece.title}', '{piece.content}') RETURNING *;"
-        res = self.db_layer.select(sql)
+        res = self.db_layer.execute(sql)
 
         if not res: raise NotInsertedError()
 
@@ -64,7 +77,7 @@ class PieceMapper:
             return piece
 
         sql = f"UPDATE pieces SET title = '{piece.title}', content = '{piece.content}' WHERE id = {piece.id} RETURNING *;"
-        res =  self.db_layer.update(sql)
+        res =  self.db_layer.execute(sql)
 
         if not res: raise NotInsertedError()
 
@@ -81,7 +94,7 @@ class DocumentMapper:
         if not id: raise TypeError("Expect an integer.")
 
         sql = f"SELECT * FROM documents WHERE id={str(id)} LIMIT 1"
-        res = self.db_layer.select(sql)
+        res = self.db_layer.execute(sql)
 
         if not res: raise NotFoundError()
 
@@ -90,7 +103,7 @@ class DocumentMapper:
     def find_all(self) -> list[Document]:
         # Strong hypothesis : DB is light
         sql = f"SELECT * FROM documents"
-        res = self.db_layer.select(sql)
+        res = self.db_layer.execute(sql)
 
         if not res or len(res) == 0: raise NotFoundError()
 
@@ -100,7 +113,7 @@ class DocumentMapper:
         if not isinstance(doc, Document): raise TypeError("A doc object is expected.")
 
         sql = f"INSERT INTO documents (title, content) VALUES ('{doc.title}', '{doc.content}') RETURNING *;"
-        res = self.db_layer.insert(sql)
+        res = self.db_layer.execute(sql)
 
         if not res: raise NotFoundError()
 
@@ -118,7 +131,7 @@ class DocumentMapper:
             return doc
         
         sql = f"UPDATE documents SET content = '{doc.content}', title = '{doc.title}' WHERE id = {doc.id} RETURNING *;"
-        res = self.db_layer.update(sql)
+        res = self.db_layer.execute(sql)
 
         if not res: raise NotFoundError()
 

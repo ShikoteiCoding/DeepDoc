@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Optional
 import psycopg2
 
 from psycopg2.extras import RealDictCursor
@@ -47,33 +47,16 @@ class DBLayerAccess:
         self.connection.close()
         print("DB Success - Connection to DB closed")
 
-    def execute(self, cursor: Cursor, sql: str) -> list[dict] | None:
-        """ Method used to execute a query which returns multiple records if found. """
-        cursor.execute(sql)
+    def pg_execute(self, cursor: Cursor, sql: str, placeholder: tuple[str,...] | None) -> list[dict] | None:
+        cursor.execute(sql, placeholder)
         res = cursor.fetchall()
         self.commit()
         return res #type: ignore
-                        
-    def select(self, sql) -> list[dict] | None:
+
+    def execute(self, query: str, placeholder: tuple[str,...] | None = None) -> list[dict] | None:
         if not self.connection: raise NoDatabaseConnection("Connection does not exist.")
 
-        if not sql: raise EmptySQLQueryException("SQL Query provided is Null.")
+        if not query: raise EmptySQLQueryException("SQL Query provided is Null.")
 
         with self.connection.cursor(cursor_factory = RealDictCursor) as cur:
-            return self.execute(cur, sql)
-    
-    def insert(self, sql: str) -> list[dict] | None:
-        if not self.connection: raise NoDatabaseConnection("Connection does not exist.")
-
-        if not sql: raise EmptySQLQueryException("SQL Query provided is Null.")
-
-        with self.connection.cursor(cursor_factory = RealDictCursor) as cur:
-            return self.execute(cur, sql)
-
-    def update(self, sql:str) -> list[dict] | None:
-        if not self.connection: raise NoDatabaseConnection("Connection does not exist.")
-
-        if not sql: raise EmptySQLQueryException("SQL Query provided is Null.")
-
-        with self.connection.cursor(cursor_factory = RealDictCursor) as cur:
-            return self.execute(cur, sql)
+            return self.pg_execute(cur, query, placeholder)
