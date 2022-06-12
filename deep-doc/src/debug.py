@@ -1,8 +1,7 @@
-from domain_types.piece import Piece
-from domain_types.document import Document
+from domain_types import Piece, Document
 
 from config import Config
-from db.db import DBLayerAccess
+from db import DBLayerAccess
 
 from utils import PieceMapper
 

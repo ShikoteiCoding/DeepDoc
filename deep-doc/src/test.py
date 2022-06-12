@@ -1,4 +1,4 @@
-from db.db import  DBLayerAccess
+from db import  DBLayerAccess
 from config import Config
 from utils import (
     DocumentParser, 
@@ -8,8 +8,7 @@ from utils import (
 # Used to assert that code evolutions should not make the existing one crash
 # Can also be use to DB changes by adding the changes in the Mappers
 
-from domain_types.piece import Piece
-from domain_types.document import Document
+from domain_types import Piece, Document
 
 import unittest
 

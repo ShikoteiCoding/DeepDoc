@@ -4,8 +4,7 @@ from utils import (
     PieceMapper, DocumentMapper
 )
 
-from domain_types.piece import Piece
-from domain_types.document import Document
+from domain_types import Piece, Document
 
 if __name__ == '__main__':
     
