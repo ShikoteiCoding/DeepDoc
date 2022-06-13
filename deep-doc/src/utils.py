@@ -96,19 +96,26 @@ class PieceMapper:
             return piece
 
         query = sql.SQL(
-            "UPDATE {table} SET ({mutable_columns}) VALUES ({place_holder}) WHERE {pkey} = {id} RETURNING *;"
+            "UPDATE {table} SET {values} WHERE {pkey} = {id} RETURNING *;"
         ).format(
-            table = self.table,
-            mutable_columns = self.mutable_columns,
-            pkey = self.pkey,
-            place_holder = sql.SQL(',').join(
-                [sql.Placeholder(c) for c in self.mutable_columns]
+            table = sql.Identifier(self.table),
+            values = sql.SQL(',').join(
+                [
+                    sql.Composed(
+                        [
+                            sql.Identifier(col),
+                            sql.SQL(" = "),
+                            sql.Placeholder(col)
+                        ]
+                    )
+                    for col in self.mutable_columns
+                ]
             ),
-            id = str(piece.id)
+            pkey = sql.Identifier(self.pkey),
+            id = sql.Placeholder(self.pkey)
         )
 
-        #sql = f"UPDATE pieces SET title = '{piece.title}', content = '{piece.content}' WHERE id = {piece.id} RETURNING *;"
-        res =  self.db_layer.execute(query, {str(col): str(getattr(piece, col)) for col in self.mutable_columns})
+        res =  self.db_layer.execute(query, {**{str(col): str(getattr(piece, col)) for col in self.mutable_columns}, **{self.pkey: str(piece.id)}})
 
         if not res: raise NotInsertedError()
 
