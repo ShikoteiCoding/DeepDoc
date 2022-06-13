@@ -31,6 +31,7 @@ class PieceMapper:
 
     def find(self, id: int | None) -> Piece:
         """ Return a specific item by primary key search. """
+
         if not id: raise TypeError("Expect an integer.")
         
         query = sql.SQL(
@@ -128,48 +129,99 @@ class DocumentMapper:
     def __init__(self, db_layer: DBLayerAccess):
         self.db_layer = db_layer
 
-    def find(self, id: int | None) -> Document:
-        if not id: raise TypeError("Expect an integer.")
+        # SQL
+        self.table = "documents"
+        self.pkey = "id"
+        self.mutable_columns = ['title', 'content']
 
-        sql = f"SELECT * FROM documents WHERE id={str(id)} LIMIT 1"
-        res = self.db_layer.execute(sql)
+    def find(self, id: int | None) -> Document:
+        """ Return a specific item by primary key search. """
+
+        if not id: raise TypeError("Expect an integer.")
+        
+        query = sql.SQL(
+            "SELECT * FROM {table} WHERE {pkey} = %s"
+        ).format(
+            table = sql.Identifier(self.table),
+            pkey = sql.Identifier(self.pkey)
+        )
+
+        res = self.db_layer.execute(query, (str(id),))
 
         if not res: raise NotFoundError()
 
         return Document(**res[0])
 
     def find_all(self) -> list[Document]:
-        # Strong hypothesis : DB is light
-        sql = f"SELECT * FROM documents"
-        res = self.db_layer.execute(sql)
+        """ Return all items. """
+
+        query = sql.SQL(
+            "SELECT * FROM {table}"
+        ).format(
+            table = sql.Identifier(self.table)
+        )
+
+        res = self.db_layer.execute(query)
 
         if not res or len(res) == 0: raise NotFoundError()
 
         return [Document(**row) for row in res]
 
-    def insert(self, doc: Document | None) -> Document:
-        if not isinstance(doc, Document): raise TypeError("A doc object is expected.")
+    def insert(self, document: Document | None) -> Document:
+        """ Insert one item. """
+        
+        if not isinstance(document, Document): raise TypeError("A doc object is expected.")
 
-        sql = f"INSERT INTO documents (title, content) VALUES ('{doc.title}', '{doc.content}') RETURNING *;"
-        res = self.db_layer.execute(sql)
+        query = sql.SQL(
+            "INSERT INTO {table} ({mutable_columns}) VALUES ({place_holder}) RETURNING *;"
+        ).format(
+            table = sql.Identifier(self.table),
+            mutable_columns = sql.SQL(', ').join(map(sql.Identifier, self.mutable_columns)),
+            place_holder = sql.SQL(',').join(
+                [sql.Placeholder(c) for c in self.mutable_columns]
+            )
+        )
+        
+        res = self.db_layer.execute(query, {str(col): str(getattr(document, col)) for col in self.mutable_columns})
+
 
         if not res: raise NotFoundError()
 
         return Document(**res[0])
 
-    def update(self, doc: Document | None) -> Document:
-        if not isinstance(doc, Document): raise TypeError("A doc object is expected.")
+    def update(self, document: Document | None) -> Document:
+        """ Update an existing item. """
+        if not isinstance(document, Document): raise TypeError("A doc object is expected.")
         
-        if not doc.id or not doc.content: raise AttributeError("Attribute of doc object does not exist.")
+        if not document.id or not document.content: raise AttributeError("Attribute of doc object does not exist.")
         
-        fetched_doc = self.find(doc.id)
+        fetched_doc = self.find(document.id)
 
-        if fetched_doc == doc:
+        if fetched_doc == document:
             print("Model Warning - A record is not updated because has no changes")
-            return doc
+            return document
         
-        sql = f"UPDATE documents SET content = '{doc.content}', title = '{doc.title}' WHERE id = {doc.id} RETURNING *;"
-        res = self.db_layer.execute(sql)
+        query = sql.SQL(
+            "UPDATE {table} SET {values} WHERE {pkey} = {id} RETURNING *;"
+        ).format(
+            table = sql.Identifier(self.table),
+            values = sql.SQL(',').join(
+                [
+                    sql.Composed(
+                        [
+                            sql.Identifier(col),
+                            sql.SQL(" = "),
+                            sql.Placeholder(col)
+                        ]
+                    )
+                    for col in self.mutable_columns
+                ]
+            ),
+            pkey = sql.Identifier(self.pkey),
+            id = sql.Placeholder(self.pkey)
+        )
+
+        res =  self.db_layer.execute(query, {**{str(col): str(getattr(document, col)) for col in self.mutable_columns}, **{self.pkey: str(document.id)}})
 
         if not res: raise NotFoundError()
 
