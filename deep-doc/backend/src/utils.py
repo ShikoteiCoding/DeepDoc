@@ -1,7 +1,7 @@
 from domain_types import Piece, Document
 from db import DBLayerAccess
 
-from psycopg2 import sql
+from psycopg2 import sql #type: ignore
 import json
 
 SCHEMA_PATH = "../schema/"
