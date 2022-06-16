@@ -1,9 +1,6 @@
-from utils import (
-    DBLayerAccess, 
-    PieceMapper, DocumentMapper
-)
+from db import DBLayerAccess
 
-from domain_types import Piece, Document
+from models import (Piece, PieceMapper, Document, DocumentMapper)
 
 from config import Config
 
@@ -19,7 +16,6 @@ def usecase_create_and_push(db_layer: DBLayerAccess):
 def usecase_create_nested_document(db_layer: DBLayerAccess):
     PieceMapper(db_layer)
     DocumentMapper(db_layer)
-    
 
 if __name__ == '__main__':
     

@@ -1,8 +1,7 @@
-from typing import Any, Optional
-import psycopg2
+import psycopg2 #type: ignore
 
-from psycopg2.extras import RealDictCursor
-from psycopg2.extensions import cursor as Cursor
+from psycopg2.extras import RealDictCursor #type: ignore
+from psycopg2.extensions import cursor as Cursor #type: ignore
 
 from config import Config
 

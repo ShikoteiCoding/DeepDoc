@@ -1,16 +1,12 @@
 from db import  DBLayerAccess
 from config import Config
-from utils import (
-    DocumentParser, 
-    PieceMapper, DocumentMapper
-)
+from models import (Piece, PieceMapper, Document, DocumentMapper)
+
+import unittest
+
 # This is sample testing, no real and serious unit tests to be implemented
 # Used to assert that code evolutions should not make the existing one crash
 # Can also be use to DB changes by adding the changes in the Mappers
-
-from domain_types import Piece, Document
-
-import unittest
 
 PIECE_TITLE = "PIECE_TITLE"
 PIECE_CONTENT = "PIECE_CONTENT"
