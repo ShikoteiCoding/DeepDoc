@@ -1,28 +1,32 @@
 from db import DBLayerAccess
-
 from models import (Piece, PieceMapper, Document, DocumentMapper)
 
 from config import Config
+from fastapi import FastAPI
 
-def usecase_create_and_push(db_layer: DBLayerAccess):
-    piece = Piece()
-
-    piece_mapper = PieceMapper(db_layer)
-    piece = Piece(**{"title": "Title", "content": "Content"})
-    inserted_piece = piece_mapper.insert(piece)
-
-    print(piece == inserted_piece)
-
-def usecase_create_nested_document(db_layer: DBLayerAccess):
-    PieceMapper(db_layer)
-    DocumentMapper(db_layer)
-
-if __name__ == '__main__':
+#if __name__ == '__main__':
     
-    c = Config()
-    db_layer = DBLayerAccess(c)
+    #c = Config()
+    #db_layer = DBLayerAccess(c)
+    #db_layer.connect()
+    #db_layer.close()
+
+app = FastAPI()
+
+@app.get("/")
+async def root():
+    return {"message": "Hello World"}
+
+@app.get("/pieces/{piece_id}")
+async def get_piece(piece_id: int):
+    return {"piece_id": piece_id}
+
+@app.get("/documents/{document_id}")
+async def get_document(document_id: int):
+    db_layer = DBLayerAccess(Config())
     db_layer.connect()
-
-    usecase_create_and_push(db_layer)
-
+    document_mapper = DocumentMapper(db_layer)
+    document = document_mapper.find(document_id)
     db_layer.close()
+    
+    return {"document_id": document}
