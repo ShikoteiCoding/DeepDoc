@@ -1,6 +1,7 @@
-from db import  DBLayerAccess
+from db import  DBLayerAccess, NoDatabaseConnection, EmptySQLQueryException
 from config import Config
 from models import (Piece, PieceMapper, Document, DocumentMapper)
+
 
 import unittest
 
@@ -13,6 +14,33 @@ PIECE_CONTENT = "PIECE_CONTENT"
 
 DOCUMENT_TITLE = "DOCUMENT_TITLE"
 DOCUMENT_CONTENT = "DOCUMENT_CONTENT"
+
+class DBLayerTest(unittest.TestCase):
+
+    def test_wrong_connection_arguments(self) -> None:
+        c = Config(db_host = "localhost_")
+        db_layer = DBLayerAccess(c)
+        db_layer.connect()
+        self.assertEqual(db_layer.connection, None)
+
+    def test_commit_db_not_connected(self) -> None:
+        c = Config()
+        db_layer = DBLayerAccess(c)
+        self.assertRaises(AttributeError, db_layer.commit)
+
+    def test_commit_db_connection_null(self) -> None:
+        c = Config()
+        db_layer = DBLayerAccess(c)
+        db_layer.connection = None
+        self.assertRaises(NoDatabaseConnection, db_layer.commit)
+
+    def test_empty_sql_query(self) -> None:
+        c = Config()
+        db_layer = DBLayerAccess(c)
+        db_layer.connect()
+        self.assertRaises(EmptySQLQueryException, db_layer.execute, **{"query": None})
+        db_layer.close()
+
 
 class PieceTest(unittest.TestCase):
 
@@ -170,7 +198,7 @@ class DocumentMappingTest(unittest.TestCase):
         self.assertIsInstance(found_doc, Document)
         self.assertEqual(inserted_doc, found_doc)
 
-    def test_update_doc_db(self):
+    def test_update_doc_db(self) -> None:
         """ Testing a Document updated in the DB and isn ot the same as the one modified. """
 
         doc = Document(**{"title": DOCUMENT_TITLE, "content": DOCUMENT_CONTENT})
@@ -200,22 +228,8 @@ class DocumentMappingTest(unittest.TestCase):
 
         self.assertNotEqual(saved_doc, updated_doc)
 
+
+
 if __name__ == '__main__':
-    #print("6 - Creating a nested doc")
-    #print("6.1 - Creating a piece which will be used in the doc")
-    #referenced_piece = Piece({"title": "Creation Date", "content": "2022"})
-    #saved_referenced_piece = piece_mapper.insert(referenced_piece)
-    #
-    #print("6.2 - Creating the doc and referencing the previously saved piece")
-    #nested_doc = Doc({"content": f"DeepDoc was created in \@{saved_referenced_piece.id}@ and is for now open source (lol)"})
-    #
-    #print("6.3 - Reading the document with inline references")
-    #print(DocParser.read(nested_doc, piece_mapper))
-#
-    #print("7 - Getting all records")
-    #print(piece_mapper.findall())
-    #print(doc_mapper.findall())
-    #
-    #db_layer.close()
 
     unittest.main()
