@@ -8,6 +8,8 @@ services:
     build:
       context: ./api
       dockerfile: Dockerfile
+    networks:
+      - deep-doc-network
 
   db-deep-doc:
     container_name: db-deep-doc
@@ -19,9 +21,14 @@ services:
       - POSTGRES_DB=postgres
     ports:
       - '5432:5432'
+    networks:
+      - deep-doc-network
     volumes:
       - deep-doc-data:/var/lib/postgresql/data
       - ./db/init_db.sql:/docker-entrypoint-initdb.d/init_db.sql
 
 volumes:
   deep-doc-data:
+
+networks:
+  deep-doc-network:
