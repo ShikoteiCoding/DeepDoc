@@ -2,6 +2,13 @@ version: "3.9"
 
 services:
 
+  api-deep-doc:
+    container_name: api-deep-doc
+    hostname: api-deep-doc
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+
   db-deep-doc:
     container_name: db-deep-doc
     hostname: db-deep-doc

@@ -4,15 +4,7 @@ from models import (Piece, PieceMapper, Document, DocumentMapper)
 from config import Config
 from fastapi import FastAPI
 
-#if __name__ == '__main__':
-    
-    #c = Config()
-    #db_layer = DBLayerAccess(c)
-    #db_layer.connect()
-    #db_layer.close()
-
 app = FastAPI()
-
 
 db_layer = DBLayerAccess(Config())
 db_layer.connect()
