@@ -1,9 +1,11 @@
-import psycopg2 #type: ignore
-
-from psycopg2.extras import RealDictCursor #type: ignore
-from psycopg2.extensions import cursor as Cursor #type: ignore
+from typing import Any
+from psycopg2.extras import RealDictCursor
+from psycopg2.extensions import cursor as Cursor
+from psycopg2 import OperationalError, errorcodes, errors, connect as pg_connect
 
 from config import Config
+
+import sys
 
 ##
 #   Higher level Exceptions for DB
@@ -14,6 +16,24 @@ class NoDatabaseConnection(Exception):
     pass
 class NoDatabaseRecordFound(Exception):
     pass
+
+def print_psycopg2_exception(err):
+    """ Psycopg errors printer. """
+    err_type, err_obj, traceback = sys.exc_info()
+
+    if traceback:
+        line_num = traceback.tb_lineno
+
+        # print the connect() error
+        print ("\npsycopg2 ERROR:", err, "on line number:", line_num)
+        print ("psycopg2 traceback:", traceback, "-- type:", err_type)
+
+        # psycopg2 extensions.Diagnostics object attribute
+        print ("\nextensions.Diagnostics:", err.diag)
+
+        # print the pgcode and pgerror exceptions
+        print ("pgerror:", err.pgerror)
+        print ("pgcode:", err.pgcode, "\n")
 
 ##
 ##  DB Access Layer
@@ -26,32 +46,35 @@ class DBLayerAccess:
     
     def connect(self):
         try:
-            self.connection = psycopg2.connect(
+            self.connection = pg_connect(
                 user        = self.config.db_user,
                 password    = self.config.db_pwd,
                 host        = self.config.db_host,
                 port        = self.config.db_port,
                 database    = self.config.db_name
             )
-            print("DB Success - Connection to DB created")
-        except (psycopg2.OperationalError) as error:
-            print(error)
+        except (OperationalError) as error:
+            print_psycopg2_exception(error)
+            self.connection = None
 
     def commit(self):
+        if not self.connection: raise NoDatabaseConnection("Connection does not exist.")
         self.connection.commit()
     
     def close(self):
         if not self.connection: raise NoDatabaseConnection("Connection does not exist.")
-        
         self.connection.close()
-        print("DB Success - Connection to DB closed")
 
     def pg_execute(self, cursor: Cursor, sql: str, placeholder: tuple[str,...] | dict[str, str] | None) -> list[dict] | None:
         """ Execute the query and get the response. """
-        cursor.execute(sql, placeholder)
-        res = cursor.fetchall()
-        self.commit()
-        return res #type: ignore
+        try:
+            cursor.execute(sql, placeholder)
+            res = cursor.fetchall()
+            self.commit()
+        except Exception as error:
+            print_psycopg2_exception(error)
+            res = None
+        return res # type: ignore
 
     def execute(self, query: str, placeholder: tuple[str,...] | dict[str, str] | None = None) -> list[dict] | None:
         """ Execute method abstraction. """
