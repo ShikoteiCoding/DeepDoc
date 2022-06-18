@@ -13,20 +13,24 @@ from fastapi import FastAPI
 
 app = FastAPI()
 
+
+db_layer = DBLayerAccess(Config())
+db_layer.connect()
+document_mapper = DocumentMapper(db_layer)
+piece_mapper = PieceMapper(db_layer)
+
+
 @app.get("/")
 async def root():
     return {"message": "Hello World"}
 
 @app.get("/pieces/{piece_id}")
 async def get_piece(piece_id: int):
-    return {"piece_id": piece_id}
+    """ Get a piece by specifiying ID. """
+    piece = piece_mapper.find(piece_id)
+    return {"piece_id": piece.__dict__}
 
 @app.get("/documents/{document_id}")
 async def get_document(document_id: int):
-    db_layer = DBLayerAccess(Config())
-    db_layer.connect()
-    document_mapper = DocumentMapper(db_layer)
     document = document_mapper.find(document_id)
-    db_layer.close()
-    
-    return {"document_id": document}
+    return {"document_id": document.__dict__}
