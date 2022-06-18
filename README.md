@@ -33,18 +33,12 @@ pip install psycopg2-binary
 ``` 
 
 # Next Steps
-- Core functions (future back)
+- Features
     1. Duplicate a piece
     2. Historicy Tracking (more of a DB stuff ? - Who knows)
-- Precise tech stack (dev not prod)
-    1. Back
-    2. Front
 - Come up with simple front (demo only)
     1. Framework ?
     2. TS or JS
--  Dockerise
-    1. Core functions as future back
-    2. Front should be webpacked
 - DB
     1. Swhitch to Key-Value DB ? (thinking)
     2. Adding doc and piece title for search [half-done]
@@ -73,6 +67,9 @@ pip install psycopg2-binary
     1. Refactor SQL DB execution [done]
     2. Active Record Pattern instead between records and object stores [done]
     3. Switch simple classes to dataclasses [done]
+- Dockerise
+    1. Front docker compose [done]
+    2. Back docker compose (one DB and one API) [done]
 
 
 ## TODO
