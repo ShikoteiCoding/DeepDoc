@@ -1,19 +1,14 @@
-# 
 FROM python:3.10
 
-# 
+#ADD ./app/ /code
 WORKDIR /code
 
-# 
-COPY ./requirements.txt /code/requirements.txt
+ENV VIRTUAL_ENV=/opt/venv
+RUN python3 -m venv $VIRTUAL_ENV
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+ENV PYTHONPATH /code
 
-# 
+COPY ./requirements.txt /code/requirements.txt
 RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
 
-# 
-COPY ./app /code/app
-COPY ./app/db /code/app
-COPY ./app/models /code/app
-
-# 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "80"]
+CMD ["uvicorn", "main:app", "--host", "127.0.0.1", "--port", "8888"]
