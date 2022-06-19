@@ -10,6 +10,8 @@ services:
       dockerfile: Dockerfile
     networks:
       - deep-doc-network
+    volumes:
+      - ./api/app:/code
 
   db-deep-doc:
     container_name: db-deep-doc
