@@ -3,7 +3,7 @@ version: "3.9"
 services:
 
   db-deep-doc:
-    container_name: db-deep-doc
+    container_name: db
     hostname: db-deep-doc
     image: postgres:12
     environment:
@@ -12,28 +12,29 @@ services:
       - POSTGRES_DB=postgres
     ports:
       - '5432:5432'
-    networks:
-      - deep-doc-network
     volumes:
       - deep-doc-data:/var/lib/postgresql/data
       - ./db/init_db.sql:/docker-entrypoint-initdb.d/init_db.sql
 
   api-deep-doc:
-    container_name: api-deep-doc
+    container_name: api
     hostname: api-deep-doc
     build:
       context: ./api
       dockerfile: Dockerfile
     image: local/api-deep-doc
     depends_on:
-      - db-deep-doc
-    networks:
-      - deep-doc-network
+      - db
+    environment:
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_NAME=postgres
+      - DB_USER=admin
+      - DB_PWD=admin
+    ports:
+      - '8888:8888'
     volumes:
       - ./api/app:/code
 
 volumes:
   deep-doc-data:
-
-networks:
-  deep-doc-network:

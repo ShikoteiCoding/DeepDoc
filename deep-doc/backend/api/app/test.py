@@ -1,9 +1,10 @@
 from db import  DBLayerAccess, NoDatabaseConnection, EmptySQLQueryException
-from config import Config
+from config import Config, load_config
 from models import (Piece, PieceMapper, Document, DocumentMapper)
 
 
 import unittest
+import os
 
 # This is sample testing, no real and serious unit tests to be implemented
 # Used to assert that code evolutions should not make the existing one crash
@@ -15,28 +16,35 @@ PIECE_CONTENT = "PIECE_CONTENT"
 DOCUMENT_TITLE = "DOCUMENT_TITLE"
 DOCUMENT_CONTENT = "DOCUMENT_CONTENT"
 
+DB_HOST="db"
+DB_PORT="5432"
+DB_NAME="postgres"
+DB_USER="admin"
+DB_PWD="admin"
+
 class DBLayerTest(unittest.TestCase):
+    def setUp(self) -> None:
+        self.c = load_config()
 
     def test_wrong_connection_arguments(self) -> None:
-        c = Config(db_host = "localhost_")
+        c = load_config()
+        c.db_host = "fake_localhost"
         db_layer = DBLayerAccess(c)
         db_layer.connect()
         self.assertEqual(db_layer.connection, None)
+        os.environ["DB_HOST"] = DB_HOST
 
     def test_commit_db_not_connected(self) -> None:
-        c = Config()
-        db_layer = DBLayerAccess(c)
+        db_layer = DBLayerAccess(self.c)
         self.assertRaises(AttributeError, db_layer.commit)
 
     def test_commit_db_connection_null(self) -> None:
-        c = Config()
-        db_layer = DBLayerAccess(c)
+        db_layer = DBLayerAccess(self.c)
         db_layer.connection = None
         self.assertRaises(NoDatabaseConnection, db_layer.commit)
 
     def test_empty_sql_query(self) -> None:
-        c = Config()
-        db_layer = DBLayerAccess(c)
+        db_layer = DBLayerAccess(self.c)
         db_layer.connect()
         self.assertRaises(EmptySQLQueryException, db_layer.execute, **{"query": None})
         db_layer.close()
@@ -77,7 +85,7 @@ class PieceMappingTest(unittest.TestCase):
         """
         Init DB
         """
-        self.db_layer = DBLayerAccess(Config())
+        self.db_layer = DBLayerAccess(load_config())
         self.db_layer.connect()
         self.piece_mapper = PieceMapper(self.db_layer)
     
@@ -156,7 +164,7 @@ class DocumentMappingTest(unittest.TestCase):
         """
         Init DB
         """
-        self.db_layer = DBLayerAccess(Config())
+        self.db_layer = DBLayerAccess(load_config())
         self.db_layer.connect()
         self.document_mapper = DocumentMapper(self.db_layer)
     
