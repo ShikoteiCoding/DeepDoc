@@ -6,10 +6,10 @@ Docs writing should be easier. This project is for me to progress as a software 
 For now, the actions are not yet dockerized because it's still in a dev phase. So installing a virtualenv to manage the dependencies. The Database however is properly dockerize as it is pretty static.
 
 ## Docker commands
-### Setup the db
+### Setup the containers
 ```
 cd deep-doc
-docker compose up -d
+docker compose up
 ```
 ### Delete
 If need to debuild the docker because of schema change. Don't forget to delete both the container and the volume.
@@ -20,6 +20,7 @@ docker rm db-deep-doc && docker volume rm deep-doc_deep-doc-data
 ```
 
 ## Python 
+If you want to run outside docker, follow the following commands. Else, everything is managed by containers.
 ### Create a virtual env in a separate folder
 ```
 cd ../
@@ -29,6 +30,8 @@ source venv/bin/activate
 
 ### Dependencies
 ```
+pip install fastapi
+pip install uvicorn[standard]
 pip install psycopg2-binary
 ``` 
 
