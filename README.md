@@ -47,7 +47,7 @@ pip install psycopg2-binary
     2. Adding doc and piece title for search [half-done]
     3. Saving a doc with references should fill the rel table
     4. Use psycopg execute sql with parameters instead of using f-strings (not safe ?)
-    5. Connection pooling (as a performance curiosity)
+    5. Connection pooling [half-done]
 - Beautify
     1. Switch prints to proper logging system
     2. Switch to clean unit test, boring to deal with printer to test
@@ -66,6 +66,7 @@ pip install psycopg2-binary
     1. Auto-increment on PK [done]
     2. Auto create date / update date ? [done]
     3. Switch DBLayerAccess error catching with context manager [done]
+    4. Connection pooling (with auto management, nothing custom) [done]
 - Beautify
     1. Refactor SQL DB execution [done]
     2. Active Record Pattern instead between records and object stores [done]
