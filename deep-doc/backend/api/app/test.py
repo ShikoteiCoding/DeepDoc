@@ -1,5 +1,5 @@
 from db import  DBLayerAccess, NoDatabaseConnection, EmptySQLQueryException
-from config import Config, load_config
+from config import load_config
 from models import (Piece, PieceMapper, Document, DocumentMapper)
 
 
@@ -16,7 +16,7 @@ PIECE_CONTENT = "PIECE_CONTENT"
 DOCUMENT_TITLE = "DOCUMENT_TITLE"
 DOCUMENT_CONTENT = "DOCUMENT_CONTENT"
 
-DB_HOST="db"
+DB_HOST="localhost"
 DB_PORT="5432"
 DB_NAME="postgres"
 DB_USER="admin"

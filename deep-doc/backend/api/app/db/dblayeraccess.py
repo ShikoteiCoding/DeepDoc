@@ -41,8 +41,9 @@ def print_psycopg2_exception(err):
 class DBLayerAccess:
     """ Database Layer Access to communicate with DB. """
 
-    def __init__(self, config: Config):
+    def __init__(self, config: Config, debug=False):
         self.config = config
+        self.debug = debug
     
     def connect(self):
         try:
@@ -65,22 +66,18 @@ class DBLayerAccess:
         if not self.connection: raise NoDatabaseConnection("Connection does not exist.")
         self.connection.close()
 
-    def pg_execute(self, cursor: Cursor, sql: str, placeholder: tuple[str,...] | dict[str, str] | None) -> list[dict] | None:
-        """ Execute the query and get the response. """
-        try:
-            cursor.execute(sql, placeholder)
-            res = cursor.fetchall()
-            self.commit()
-        except Exception as error:
-            print_psycopg2_exception(error)
-            res = None
-        return res # type: ignore
-
-    def execute(self, query: str, placeholder: tuple[str,...] | dict[str, str] | None = None) -> list[dict] | None:
+    def execute(self, query: str, placeholder: tuple[str, ...] | dict[str, str] | None = None) -> list[dict] | None:
         """ Execute method abstraction. """
         if not self.connection: raise NoDatabaseConnection("Connection does not exist.")
 
         if not query: raise EmptySQLQueryException("SQL Query provided is Null.")
 
         with self.connection.cursor(cursor_factory = RealDictCursor) as cur:
-            return self.pg_execute(cur, query, placeholder)
+            try:
+                cur.execute(query, placeholder)
+                res = cur.fetchall()
+                self.commit()
+            except Exception as error:
+                if self.debug: print_psycopg2_exception(error)
+                res = None
+            return res # type: ignore

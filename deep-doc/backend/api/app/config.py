@@ -27,7 +27,7 @@ class Config:
     db_pwd:  Optional[str] = field(init=True, default=None)
 
 def load_config() -> Config:
-    db_host = get_required("DB_HOST", "db")
+    db_host = get_required("DB_HOST", "localhost")
     db_port = get_required("DB_PORT", "5432")
     db_name = get_required("DB_NAME", "postgres")
     db_user = get_required("DB_USER", "admin")
