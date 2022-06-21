@@ -6,10 +6,17 @@ from fastapi import FastAPI
 
 app = FastAPI()
 
-db_layer = DBLayerAccess(load_config())
-db_layer.connect()
+db_layer = DBLayerAccess(load_config(), debug=True)
 document_mapper = DocumentMapper(db_layer)
 piece_mapper = PieceMapper(db_layer)
+
+@app.on_event("startup")
+def open_pool():
+    db_layer.connect()
+
+@app.on_event("shutdown")
+def close_pool():
+    db_layer.close()
 
 @app.get("/")
 async def root():

@@ -31,17 +31,8 @@ class DBLayerTest(unittest.TestCase):
         c.db_host = "fake_localhost"
         db_layer = DBLayerAccess(c)
         db_layer.connect()
-        self.assertEqual(db_layer.connection, None)
+        self.assertEqual(db_layer.pool, None)
         os.environ["DB_HOST"] = DB_HOST
-
-    def test_commit_db_not_connected(self) -> None:
-        db_layer = DBLayerAccess(self.c)
-        self.assertRaises(AttributeError, db_layer.commit)
-
-    def test_commit_db_connection_null(self) -> None:
-        db_layer = DBLayerAccess(self.c)
-        db_layer.connection = None
-        self.assertRaises(NoDatabaseConnection, db_layer.commit)
 
     def test_empty_sql_query(self) -> None:
         db_layer = DBLayerAccess(self.c)

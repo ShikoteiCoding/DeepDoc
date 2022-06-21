@@ -2,6 +2,7 @@ from typing import Any
 from psycopg2.extras import RealDictCursor
 from psycopg2.extensions import cursor as Cursor
 from psycopg2 import OperationalError, errorcodes, errors, connect as pg_connect
+from psycopg2.pool import SimpleConnectionPool
 
 from config import Config
 
@@ -34,12 +35,11 @@ def print_psycopg2_exception(err):
         # print the pgcode and pgerror exceptions
         print ("pgerror:", err.pgerror)
         print ("pgcode:", err.pgcode, "\n")
-
 ##
 ##  DB Access Layer
 ## 
 class DBLayerAccess:
-    """ Database Layer Access to communicate with DB. """
+    """ Database Layer Access to communicate with DB. Handle simple connection pooling. """
 
     def __init__(self, config: Config, debug=False):
         self.config = config
@@ -47,7 +47,8 @@ class DBLayerAccess:
     
     def connect(self):
         try:
-            self.connection = pg_connect(
+            self.pool = SimpleConnectionPool(
+                1, 1,
                 user        = self.config.db_user,
                 password    = self.config.db_pwd,
                 host        = self.config.db_host,
@@ -55,29 +56,29 @@ class DBLayerAccess:
                 database    = self.config.db_name
             )
         except (OperationalError) as error:
-            print_psycopg2_exception(error)
-            self.connection = None
-
-    def commit(self):
-        if not self.connection: raise NoDatabaseConnection("Connection does not exist.")
-        self.connection.commit()
+            if self.debug: print_psycopg2_exception(error)
+            self.pool = None
     
     def close(self):
-        if not self.connection: raise NoDatabaseConnection("Connection does not exist.")
-        self.connection.close()
+        if not self.pool: raise NoDatabaseConnection("Connection does not exist.")
+        self.pool.closeall()
 
     def execute(self, query: str, placeholder: tuple[str, ...] | dict[str, str] | None = None) -> list[dict] | None:
         """ Execute method abstraction. """
-        if not self.connection: raise NoDatabaseConnection("Connection does not exist.")
+        if not self.pool: raise NoDatabaseConnection("Connection does not exist.")
 
         if not query: raise EmptySQLQueryException("SQL Query provided is Null.")
 
-        with self.connection.cursor(cursor_factory = RealDictCursor) as cur:
+        connection = self.pool.getconn()
+
+        with connection.cursor(cursor_factory = RealDictCursor) as cur:
             try:
                 cur.execute(query, placeholder)
                 res = cur.fetchall()
-                self.commit()
+                connection.commit()
             except Exception as error:
                 if self.debug: print_psycopg2_exception(error)
                 res = None
+            finally:
+                self.pool.putconn(connection)
             return res # type: ignore
