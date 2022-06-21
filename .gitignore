@@ -1,5 +1,5 @@
 **/__pycache__/
 gitconfig.sh
-/deep-doc/backend/src/wip.py
+/deep-doc/backend/api/app/wip.py
 **/.vscode
 /venv/
