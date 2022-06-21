@@ -1,16 +1,15 @@
 from db import DBLayerAccess
 from models import (Piece, PieceMapper, Document, DocumentMapper)
 
-from config import Config
+from config import Config, load_config
 from fastapi import FastAPI
 
 app = FastAPI()
 
-db_layer = DBLayerAccess(Config())
+db_layer = DBLayerAccess(load_config())
 db_layer.connect()
 document_mapper = DocumentMapper(db_layer)
 piece_mapper = PieceMapper(db_layer)
-
 
 @app.get("/")
 async def root():

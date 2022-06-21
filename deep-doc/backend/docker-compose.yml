@@ -32,7 +32,7 @@ services:
       - DB_USER=admin
       - DB_PWD=admin
     ports:
-      - '8888:8888'
+      - '80:80'
     volumes:
       - ./api/app:/code
 
