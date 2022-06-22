@@ -46,14 +46,33 @@ BEFORE UPDATE ON documents
 FOR EACH ROW
 EXECUTE PROCEDURE trigger_set_timestamp();
 
-CREATE TABLE IF NOT EXISTS docs_pieces_rel (
-    pieces_id INT NOT NULL,
-    docs_id INT NOT NULL,
-    CONSTRAINT fk_pieces
-        FOREIGN KEY (pieces_id) 
-            REFERENCES pieces(id),
+CREATE SEQUENCE doc_lifecycle_id_seq
+    START 1
+    INCREMENT 1
+    NO MAXVALUE
+    CACHE 1;
+
+CREATE TABLE IF NOT EXISTS documents_version (
+    id INT NOT NULL DEFAULT nextval('doc_lifecycle_id_seq'),
+    document_id INT NOT NULL,
+    title TEXT NOT NULL,
+    content TEXT NOT NULL,
+    create_date TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    modify_date TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    PRIMARY KEY (id),
     CONSTRAINT fk_docs
-        FOREIGN KEY (docs_id) 
+        FOREIGN KEY (document_id) 
             REFERENCES documents(id)
 );
+
+--CREATE TABLE IF NOT EXISTS docs_pieces_rel (
+--    pieces_id INT NOT NULL,
+--    docs_id INT NOT NULL,
+--    CONSTRAINT fk_pieces
+--        FOREIGN KEY (pieces_id) 
+--            REFERENCES pieces(id),
+--    CONSTRAINT fk_docs
+--        FOREIGN KEY (docs_id) 
+--            REFERENCES documents(id)
+--);
 
