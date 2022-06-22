@@ -11,12 +11,18 @@ For now, the actions are not yet dockerized because it's still in a dev phase. S
 cd deep-doc
 docker compose up
 ```
+
+## Rebuild everything
+```
+cd deep-doc
+docker compose up --build --force-recreate
+```
 ### Delete
 If need to debuild the docker because of schema change. Don't forget to delete both the container and the volume.
 
 After a docker compose up you can :
 ```
-docker rm db-deep-doc && docker volume rm deep-doc_deep-doc-data
+docker compose down
 ```
 
 ## Python 
@@ -46,15 +52,14 @@ pip install psycopg2-binary
     1. Swhitch to Key-Value DB ? (thinking)
     2. Adding doc and piece title for search [half-done]
     3. Saving a doc with references should fill the rel table
-    4. Use psycopg execute sql with parameters instead of using f-strings (not safe ?)
-    5. Connection pooling [half-done]
+    4. Connection pooling [half-done]
 - Beautify
     1. Switch prints to proper logging system
     2. Switch to clean unit test, boring to deal with printer to test
     3. Create own exceptions for DB [half-done]
     4. Unnest if statements and raising errors 
     5. Add Optional edge cases on function / method returning None
-    6. Refactor Dataclasses to make them explicit (instead of dynamic instances from dict)
+    
 
 ## History
 - Core functions (future back)
@@ -67,10 +72,12 @@ pip install psycopg2-binary
     2. Auto create date / update date ? [done]
     3. Switch DBLayerAccess error catching with context manager [done]
     4. Connection pooling (with auto management, nothing custom) [done]
+    5. Use psycopg execute sql with parameters instead of using f-strings (not safe ?) [done]
 - Beautify
     1. Refactor SQL DB execution [done]
     2. Active Record Pattern instead between records and object stores [done]
     3. Switch simple classes to dataclasses [done]
+    4. Refactor Dataclasses to make them explicit (instead of dynamic instances from dict) [done]
 - Dockerise
     1. Front docker compose [done]
     2. Back docker compose (one DB and one API) [done]
