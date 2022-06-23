@@ -2,6 +2,8 @@ from db import  DBLayerAccess, NoDatabaseConnection, EmptySQLQueryException
 from config import load_config
 from models import (Piece, PieceMapper, Document, DocumentMapper)
 
+from psycopg2.errors import UndefinedColumn, UndefinedTable
+
 
 import unittest
 import os
@@ -24,22 +26,18 @@ DB_PWD="admin"
 
 class DBLayerTest(unittest.TestCase):
     def setUp(self) -> None:
-        self.c = load_config()
+        self.db_layer = DBLayerAccess(load_config())
+        self.db_layer.connect()
 
-    def test_wrong_connection_arguments(self) -> None:
-        c = load_config()
-        c.db_host = "fake_localhost"
-        db_layer = DBLayerAccess(c)
-        db_layer.connect()
-        self.assertEqual(db_layer.pool, None)
-        os.environ["DB_HOST"] = DB_HOST
+    def tearDown(self) -> None:
+        self.db_layer.close()
 
     def test_empty_sql_query(self) -> None:
-        db_layer = DBLayerAccess(self.c)
-        db_layer.connect()
-        self.assertRaises(EmptySQLQueryException, db_layer.execute, **{"query": None})
-        db_layer.close()
+        self.assertRaises(EmptySQLQueryException, self.db_layer.execute, query = None)
 
+    def test_transaction_db_errors(self) -> None:
+        self.assertRaises(UndefinedTable, self.db_layer.execute, query = "SELECT * FROM non_exist_table")
+        self.assertRaises(UndefinedColumn, self.db_layer.execute, query = "SELECT * FROM pieces WHERE haha IS FALSE")
 
 class PieceTest(unittest.TestCase):
 

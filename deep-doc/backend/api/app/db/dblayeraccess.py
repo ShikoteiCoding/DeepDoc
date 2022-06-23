@@ -1,8 +1,9 @@
 from typing import Any
 from psycopg2.extras import RealDictCursor
 from psycopg2.extensions import cursor as Cursor
-from psycopg2 import OperationalError, errorcodes, errors, connect as pg_connect
+from psycopg2 import OperationalError
 from psycopg2.pool import SimpleConnectionPool
+from psycopg2.errors import UndefinedColumn, UndefinedTable
 
 from config import Config
 
@@ -20,7 +21,7 @@ class NoDatabaseRecordFound(Exception):
 
 def print_psycopg2_exception(err):
     """ Psycopg errors printer. """
-    err_type, err_obj, traceback = sys.exc_info()
+    err_type, _, traceback = sys.exc_info()
 
     if traceback:
         line_num = traceback.tb_lineno
@@ -76,7 +77,9 @@ class DBLayerAccess:
                 cur.execute(query, placeholder)
                 res = cur.fetchall()
                 connection.commit()
-            except Exception as error:
+            except (UndefinedTable, UndefinedColumn) as error:
+                raise error
+            except (Exception) as error:
                 if self.debug: print_psycopg2_exception(error)
                 res = None
             finally:
