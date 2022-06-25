@@ -11,10 +11,22 @@ from .utils import NotFoundError, NotInsertedError, NoRecordsError
 class Document:
     """
     Domain model of a Document.
+    Template instance of a Document.
     """
-
-    # Instance variables
     id:             Optional[int]           = field(init=True, default=None)
+    title:          str                     = field(init=True, default="")
+    content:        str                     = field(init=True, default="")
+    create_date:    Optional[dt.datetime]   = field(init=True, default=None)
+    modify_date:    Optional[dt.datetime]   = field(init=True, default=None)
+
+@dataclass
+class DocumentVersion:
+    """
+    Domain model of a Document Version.
+    Actual instance of a Document.
+    """
+    id:             Optional[int]           = field(init=True, default=None)
+    document_id:    Optional[int]           = field(init=True, default=None)
     title:          str                     = field(init=True, default="")
     content:        str                     = field(init=True, default="")
     create_date:    Optional[dt.datetime]   = field(init=True, default=None)

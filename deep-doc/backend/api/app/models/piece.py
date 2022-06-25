@@ -12,14 +12,27 @@ import datetime as dt
 class Piece:
     """
     Domain model of a Piece.
+    Template instance of a Piece.
     """
-
-    # Instance variables
     id:             Optional[int]           = field(init=True, default=None)
     title:          str                     = field(init=True, default="")
     content:        str                     = field(init=True, default="")
     create_date:    Optional[dt.datetime]   = field(init=True, default=None)
     modify_date:    Optional[dt.datetime]   = field(init=True, default=None)
+
+@dataclass
+class PieceVersion:
+    """
+    Domain model of a Piece Version.
+    Actual instance of a Piece.
+    """
+    id:             Optional[int]           = field(init=True, default=None)
+    piece_id:       Optional[int]           = field(init=True, default=None)
+    title:          str                     = field(init=True, default="")
+    content:        str                     = field(init=True, default="")
+    create_date:    Optional[dt.datetime]   = field(init=True, default=None)
+    modify_date:    Optional[dt.datetime]   = field(init=True, default=None)
+    
 
 class PieceMapper:
     """ Dataclass to map SQL Logic to Domain Logic for a Piece. """

@@ -1,4 +1,4 @@
-from .document import Document
+from .document import Document, DocumentVersion
 from .document import DocumentMapper
-from .piece import Piece
+from .piece import Piece, PieceVersion
 from .piece import PieceMapper
