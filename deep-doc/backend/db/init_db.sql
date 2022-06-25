@@ -39,7 +39,10 @@ CREATE TABLE IF NOT EXISTS pieces_version (
     content TEXT NOT NULL,
     create_date TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
     modify_date TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
-    PRIMARY KEY (id)
+    PRIMARY KEY (id),
+    CONSTRAINT fk_pieces
+        FOREIGN KEY (piece_id) 
+            REFERENCES pieces(id)
 );
 
 CREATE SEQUENCE doc_id_pk_seq
@@ -54,10 +57,7 @@ CREATE TABLE IF NOT EXISTS documents (
     content TEXT NOT NULL,
     create_date TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
     modify_date TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
-    PRIMARY KEY (id),
-    CONSTRAINT fk_pieces
-        FOREIGN KEY (piece_id) 
-            REFERENCES pieces(id)
+    PRIMARY KEY (id)
 );
 
 CREATE TRIGGER set_timestamp
@@ -84,14 +84,14 @@ CREATE TABLE IF NOT EXISTS documents_version (
             REFERENCES documents(id)
 );
 
---CREATE TABLE IF NOT EXISTS docs_pieces_rel (
---    pieces_id INT NOT NULL,
---    docs_id INT NOT NULL,
---    CONSTRAINT fk_pieces
---        FOREIGN KEY (pieces_id) 
---            REFERENCES pieces(id),
---    CONSTRAINT fk_docs
---        FOREIGN KEY (docs_id) 
---            REFERENCES documents(id)
---);
+CREATE TABLE IF NOT EXISTS document_version_piece_version_rel (
+    piece_version_id INT NOT NULL,
+    document_version_id INT NOT NULL,
+    CONSTRAINT fk_piece_versions
+        FOREIGN KEY (piece_version_id) 
+            REFERENCES pieces_version(id),
+    CONSTRAINT fk_document_versions
+        FOREIGN KEY (document_version_id) 
+            REFERENCES documents_version(id)
+);
 
