@@ -1,9 +1,27 @@
 # DeepDoc
-Docs writing should be easier. This project is for me to progress as a software developpe. I document myself a lot before implementing and try to use the most coherent architectural choices I can.
+Docs writing should be easier. 
+This project is for me to progress as a software developper and system design. The goal is to design the components to create a "Jira" like application. However, the goal is to implement document nesting: being able to create piece of information, use them in documents and keeping track of document versions by only updating the information instead of all the documents depending on this document.
 
+For instance, when using "Company presentation document" we need to update each time the document is used because: Sales volume have changed / Dates have changed / Number of employees have changed etc etc.
+
+So why not create those Pieces of information:
+- Company Number Employees
+- Company Yearly Revenue
+- Company Sales Volume
+- World Exposure
+
+And use them in any document: \
+"Company Presentation (for Investor)" \
+  |__ "Number Employee" \
+  |__ "Company Yearly Revenue" \
+  |__ "Company Sales Volume"
+
+"Company Presentation (for Customer)" \
+  |__ "World Exposure" \
+  |__ "Company Sales Volume"
 
 # Installation
-For now, the actions are not yet dockerized because it's still in a dev phase. So installing a virtualenv to manage the dependencies. The Database however is properly dockerize as it is pretty static.
+Everything is in the docker compose : database / api and backend logic. Soon to come : front.
 
 ## Docker commands
 ### Setup the containers
